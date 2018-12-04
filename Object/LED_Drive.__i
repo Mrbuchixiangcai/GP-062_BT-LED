@@ -1,0 +1,1 @@
+"..\Hardware\LED\LED_Drive.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED) DEBUG OBJECTEXTEND PRINT(.\Listings\LED_Drive.lst) OBJECT(..\Object\LED_Drive.obj)

@@ -1,0 +1,497 @@
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE KEY_MODE
+OBJECT MODULE PLACED IN ..\Object\Key_Mode.obj
+COMPILER INVOKED BY: D:\ProgramFiles\Keil_v5\C51\BIN\C51.EXE ..\Hardware\KEY\Key_Mode.c OPTIMIZE(8,SPEED) BROWSE INCDIR(
+                    -..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED) DEBUG OBJECTEXTEND PRINT(.\Listings\Key_Mode.lst) OB
+                    -JECT(..\Object\Key_Mode.obj)
+
+line level    source
+
+   1          /*************************************************************/
+   2          /*Í·ÎÄ¼þHeader File*******************************************/
+   3          /*************************************************************/
+   4          #include "app_main.h"
+   5          #include "key_mode.h"
+   6          
+   7          /*************************************************************/
+   8          /*ºê¶¨ÒåMacro Definition**************************************/
+   9          /*************************************************************/
+  10          
+  11          /*************************************************************/
+  12          /*ÀàÐÍ¶¨ÒåByte Definition**************************************/
+  13          /*************************************************************/
+  14          
+  15          /*************************************************************/
+  16          /*±êÖ¾Î»¶¨ÒåFlags Definition***********************************/
+  17          /*************************************************************/
+  18          
+  19          /*************************************************************/
+  20          /*±äÁ¿¶¨ÒåVariable Definition**********************************/
+  21          /*************************************************************/
+  22          uint8_t  gbKeyPress; //°´¼ü°´ÏÂ
+  23          uint8_t  gbKeyNone;  //Ã»ÓÐ°´¼ü°´ÏÂ
+  24          uint8_t  KeyValue;   //°´¼üÖµ
+  25          uint8_t  KeyEvent;   //°´¼üÊÂ¼þ
+  26          uint8_t  cntKeyLoop; //¼ÆÊý°´¼üÑ­»·£¬¶Ì°´£¬³¤°´£¬³¬³¤°´µÄ°´ÏÂÊ±¼ä
+  27          uint8_t  cntKeyLong;
+  28          uint8_t  KeyCurValueBK;//ÏÖÔÚ°´¼ü±¸·Ý
+  29          uint8_t  KeyCurValue;//°´¼üÏÖÔÚÖµ
+  30          uint8_t  KeyLastValue;//°´¼üÉÏÒ»´ÎµÄÖµ
+  31          
+  32          /*************************************************************/
+  33          /*Êý×é¶¨ÒåArray Definition************************************/
+  34          /*************************************************************/
+  35          
+  36          /*************************************************************/
+  37          /*º¯ÊýÉùÃ÷Function Declaration*********************************/
+  38          /*************************************************************/
+  39          
+  40          /*************************************************************/
+  41          /*º¯Êý¶¨ÒåFunction Definition**********************************/
+  42          /*************************************************************/
+  43          /*******************************************************************************
+  44          * º¯ÊýÔ­ÐÍ£º
+  45          * ÊäÈë²ÎÊý£º
+  46          * Êä³ö²ÎÊý£º
+  47          * º¯Êý¹¦ÄÜ£º»ñÈ¡°´¼üÖµ
+  48          * ·µ»ØÖµËµÃ÷£º
+  49          * ´´½¨ÈÕÆÚ£º
+  50          * ´´½¨ÈË£º
+  51          * ÐÞ¸ÄÈÕÆÚ
+  52          * ÐÞ¸ÄÈË£º
+  53          * µÚN´ÎÐÞ¸Ä£º
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 2   
+
+  54          * ÐÞ¸ÄÔ­Òò£º
+  55          * ±¸×¢£º
+  56          *******************************************************************************/
+  57          uint8_t GetKeyValue(void)
+  58          {
+  59   1              uint8_t keyNum=0;
+  60   1              if(!KEY_ADD_DEC())
+  61   1                      keyNum=K_VOLINC;
+  62   1              else if(!KEY_SUB_DEC())
+  63   1                      keyNum=K_VOLDEC;
+  64   1              else if(!KEY_SNOOZE_DEC())
+  65   1                      keyNum=K_SNOOZE_DIMMER;
+  66   1              else if(!KEY_ALARM_DEC())
+  67   1                      keyNum=K_ALARM;
+  68   1              if((!KEY_ALARM_DEC()) && (!KEY_SNOOZE_DEC()))//
+  69   1                      keyNum=K_AL_SN;
+  70   1              
+  71   1              return keyNum;
+  72   1      }
+  73          
+  74          /*******************************************************************************
+  75          * º¯ÊýÔ­ÐÍ£º
+  76          * ÊäÈë²ÎÊý£º
+  77          * Êä³ö²ÎÊý£º
+  78          * º¯Êý¹¦ÄÜ£º°´¼üÊÂ¼þ´¦Àí
+  79          * ·µ»ØÖµËµÃ÷£º
+  80          * ´´½¨ÈÕÆÚ£º
+  81          * ´´½¨ÈË£º
+  82          * ÐÞ¸ÄÈÕÆÚ
+  83          * ÐÞ¸ÄÈË£º
+  84          * µÚN´ÎÐÞ¸Ä£º
+  85          * ÐÞ¸ÄÔ­Òò£º
+  86          * ±¸×¢£º
+  87          *******************************************************************************/
+  88          void KeyEventPorc(uint8_t KeyTmp) //±»µ÷ÓÃÊ±½ÓÊÕµÄÊÇGetKeyValue()µÄ·µ»ØÖµ  Ò»°ã¹Ì¶¨£¬²»¸ü¸Ä
+  89          {
+  90   1              gbKeyPress=0;
+  91   1              if(KeyCurValue!=KeyTmp) //Õâ¸öifÓï¾äÊÇÈ¥¶¶£¬»á±»Ö´ÐÐÁ½´Î£¬µÚÈý´Î½øÀ´Ê±Ö±½ÓÌø¹ý
+  92   1              {//KeyTmpÎªÁÙÊ±Öµ£¬
+  93   2                      if(KeyCurValueBK!=KeyTmp)
+  94   2                              KeyCurValueBK=KeyTmp;
+  95   2                      else //µÚ¶þ´Î½øÀ´Ê±Ö´ÐÐÕâÒ»Ìõ
+  96   2                              KeyCurValue=KeyTmp; //
+  97   2                      return;
+  98   2              }
+  99   1              if(KeyCurValue==KeyLastValue)
+ 100   1              {
+ 101   2                      if((KeyLastValue==0) || (cntKeyLoop==0))
+ 102   2                              return;
+ 103   2                      if(--cntKeyLoop==0) //Õâ¸öÔÚµÚ¶þ´Î½øKeyEventPorc()º¯Êý£¨µÚÒ»´Î½ø¡°if(KeyCurValue==KeyLastValue)¡±Ö®Ç°£©Ê
+             -±±»ÏÂÃæ¸³ÖµÎª5
+ 104   2                      { //cntKeyLoopÎª5¾ÍÊÇ50msÊ±¼ä
+ 105   3                              KeyValue=KeyLastValue; //·À¶¶Ö®ºó°ÑÈ·¶¨µÄ°´¼ü¸³Öµ¸øKeyValue
+ 106   3                              if(gbKeyNone==0)
+ 107   3                                      gbKeyPress=1;
+ 108   3                              switch(KeyEvent)
+ 109   3                              {
+ 110   4                                      case 0:
+ 111   4                                              KeyEvent=1;
+ 112   4                                              KeyValue |= K_D;
+ 113   4                                              cntKeyLoop=cKEY_HOLD;
+ 114   4                                              break;
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 3   
+
+ 115   4                                      case 1:
+ 116   4                                              KeyEvent=2;
+ 117   4                                              KeyValue |= K_H;
+ 118   4                                              cntKeyLoop=cKEY_RATE_VOL;
+ 119   4                                              break;
+ 120   4                                              case 2:
+ 121   4                                      case 3:
+ 122   4                                              KeyEvent=3;
+ 123   4                                              KeyValue |= K_R;
+ 124   4                                              cntKeyLoop=cKEY_RATE_VOL;
+ 125   4                                              if(cntKeyLong<250)
+ 126   4                                                      cntKeyLong++;
+ 127   4                                              break;
+ 128   4                              }
+ 129   3                      }
+ 130   2              }
+ 131   1              else
+ 132   1              {
+ 133   2                      if(KeyLastValue)
+ 134   2                      {
+ 135   3                              KeyValue=KeyLastValue;
+ 136   3                              if(gbKeyNone==0)
+ 137   3                                      gbKeyPress=1;
+ 138   3                              switch(KeyEvent)
+ 139   3                              {
+ 140   4                                      case 1:KeyValue |= K_U; break;
+ 141   4                                      case 2:KeyValue |= K_LU;break;
+ 142   4                                      case 3:KeyValue |= K_LU;break;
+ 143   4                              }
+ 144   3                              KeyEvent=0;
+ 145   3                      }
+ 146   2                      else
+ 147   2                      {
+ 148   3                              gbKeyNone=0;
+ 149   3                              cntKeyLong=0;
+ 150   3                      }
+ 151   2                      cntKeyLoop=cKEY_CLICK;
+ 152   2                      KeyLastValue=KeyCurValue;
+ 153   2              }
+ 154   1      }
+ 155          
+ 156          /*******************************************************************************
+ 157          * º¯ÊýÔ­ÐÍ£º
+ 158          * ÊäÈë²ÎÊý£º
+ 159          * Êä³ö²ÎÊý£º
+ 160          * º¯Êý¹¦ÄÜ£ºÖ÷º¯Êýµ÷ÓÃ
+ 161          * ·µ»ØÖµËµÃ÷£º
+ 162          * ´´½¨ÈÕÆÚ£º
+ 163          * ´´½¨ÈË£º
+ 164          * ÐÞ¸ÄÈÕÆÚ
+ 165          * ÐÞ¸ÄÈË£º
+ 166          * µÚN´ÎÐÞ¸Ä£º
+ 167          * ÐÞ¸ÄÔ­Òò£º
+ 168          * ±¸×¢£º
+ 169          *******************************************************************************/
+ 170          void KeyScan(void) //±»Ö÷º¯Êýµ÷ÓÃ
+ 171          {
+ 172   1              KeyEventPorc(GetKeyValue());
+ 173   1      }
+ 174          
+ 175          /*******************************************************************************
+ 176          * º¯ÊýÔ­ÐÍ£º
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 4   
+
+ 177          * ÊäÈë²ÎÊý£º
+ 178          * Êä³ö²ÎÊý£º
+ 179          * º¯Êý¹¦ÄÜ£º°´¼ü¶ÔÓ¦´¦Àí
+ 180          * ·µ»ØÖµËµÃ÷£º
+ 181          * ´´½¨ÈÕÆÚ£º
+ 182          * ´´½¨ÈË£º
+ 183          * ÐÞ¸ÄÈÕÆÚ
+ 184          * ÐÞ¸ÄÈË£º
+ 185          * µÚN´ÎÐÞ¸Ä£º
+ 186          * ÐÞ¸ÄÔ­Òò£º
+ 187          * ±¸×¢£ºÈòÄêËµÃ÷£º
+ 188          *               Ä¿Ç°Ê¹ÓÃµÄ¸ñÀï¸ßÀûÀúÈòÄê¹æÔòÈçÏÂ[2]£º
+ 189          *               ¹«ÔªÄê·Ö³ýÒÔ4²»¿ÉÕû³ý£¬žéÆ½Äê¡£
+ 190          *               ¹«ÔªÄê·Ö³ýÒÔ4¿ÉÕû³ýµ«³ýÒÔ100²»¿ÉÕû³ý£¬ÎªÈòÄê¡£
+ 191          *               ¹«ÔªÄê·Ö³ýÒÔ100¿ÉÕû³ýµ«³ýÒÔ400²»¿ÉÕû³ý£¬ÎªÆ½Äê¡£
+ 192          *               ¹«ÔªÄê·Ö³ýÒÔ400¿ÉÕû³ýµ«³ýÒÔ3200²»¿ÉÕû³ý[íÔ´ÕˆÇó]£¬ÎªÈòÄê¡£
+ 193          *               ¼ÆËã·½·¨£º*
+ 194          *               if ((y % 4 == 0 and y % 100 != 0) or (y % 400 == 0 and y % 3200 != 0)):
+ 195          *                       print("écÄê")
+ 196          *               else:
+ 197          *                       print("Æ½Äê")
+ 198          *******************************************************************************/
+ 199          void KeyComMsg(void) 
+ 200          {
+ 201   1              if(gbKeyPress)
+ 202   1              { 
+ 203   2                      switch(KeyValue)
+ 204   2                      {
+ 205   3                              case KU(K_VOLINC): //value67 Ã»ÓÐbreakËùÒÔ¼ÌÐøÖ´ÐÐÏÂÒ»ÌõÓï¾ä
+ 206   3                              case KR(K_VOLINC): //value131
+ 207   3                              {
+ 208   4                                      switch(Flag_DisplayStatus)
+ 209   4                                      {
+ 210   5                                              case ADJ_YEAR:
+ 211   5                                              {
+ 212   6                                                      if(++gRTC_Year > 99)
+ 213   6                                                              gRTC_Year=18;
+ 214   6                                                      if(gRTC_Month==2)
+ 215   6                                                      {
+ 216   7                                                              if((gRTC_Year % 4) ==0)//ÕâÀïÊýÖµÊÇ2018-2099£¬ËùÒÔ²»ÓÃ"gRTC_Year % 100"
+ 217   7                                                              {
+ 218   8                                                                      Flag_LeapYear=1;//ÈòÄê
+ 219   8                                                              }
+ 220   7                                                              else
+ 221   7                                                              {
+ 222   8                                                                      Flag_LeapYear=0;
+ 223   8                                                              }
+ 224   7                                                      }
+ 225   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 226   6                                                      break;
+ 227   6                                              }
+ 228   5                                              case ADJ_MONTH:
+ 229   5                                              {
+ 230   6                                                      if(--gRTC_Month<1)
+ 231   6                                                              gRTC_Month=12;
+ 232   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 233   6                                                      break;
+ 234   6                                              }
+ 235   5                                              case ADJ_DAY:
+ 236   5                                              {
+ 237   6                                                      gRTC_Day++;
+ 238   6                                                      if(gRTC_Month==2)
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 5   
+
+ 239   6                                                      {
+ 240   7                                                              if(Flag_LeapYear==1)//ÈòÄê
+ 241   7                                                              {
+ 242   8                                                                      if(gRTC_Day>29)
+ 243   8                                                                              gRTC_Day=1;
+ 244   8                                                              }
+ 245   7                                                              else
+ 246   7                                                              {
+ 247   8                                                                      if(gRTC_Day>28)
+ 248   8                                                                              gRTC_Day=1;
+ 249   8                                                              }
+ 250   7                                                      }
+ 251   6                                                      else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+ 252   6                                                      {
+ 253   7                                                              if(gRTC_Day>30)
+ 254   7                                                                      gRTC_Day=1;
+ 255   7                                                      }
+ 256   6                                                      else
+ 257   6                                                      {
+ 258   7                                                              if(gRTC_Day>31)
+ 259   7                                                                      gRTC_Day=1;
+ 260   7                                                      }
+ 261   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 262   6                                                      break;
+ 263   6                                              }
+ 264   5                                              case ADJ_HOUR:
+ 265   5                                              {
+ 266   6                                                      if(++gRTC_Hour>23)
+ 267   6                                                              gRTC_Hour=0;
+ 268   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 269   6                                                      break;
+ 270   6                                              }
+ 271   5                                              case ADJ_MINUTE:
+ 272   5                                              {
+ 273   6                                                      if(++gRTC_Minute>59)
+ 274   6                                                              gRTC_Minute=0;
+ 275   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 276   6                                                      break;
+ 277   6                                              }
+ 278   5                                              case ADJ_DAYLIGHT_SAVING_ZONES:
+ 279   5                                              {
+ 280   6                                                      if(++gRTC_Zone>7)
+ 281   6                                                              gRTC_Zone=1;
+ 282   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 283   6                                                      break;
+ 284   6                                              }
+ 285   5                                              case ADJ_SNOOZE_TIME:
+ 286   5                                              {
+ 287   6                                                      AL1_TD.snoozeTime++;
+ 288   6                                                      break;
+ 289   6                                              }
+ 290   5                                              default:
+ 291   5                                                      break;
+ 292   5                                      }
+ 293   4                                      break;
+ 294   4                              }
+ 295   3                              case KU(K_VOLDEC): //value68
+ 296   3                              case KR(K_VOLDEC): //value132
+ 297   3                              {
+ 298   4                                      switch(Flag_DisplayStatus)
+ 299   4                                      {
+ 300   5                                              case ADJ_YEAR:
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 6   
+
+ 301   5                                              {
+ 302   6                                                      if(--gRTC_Year < 18)
+ 303   6                                                              gRTC_Year=99;
+ 304   6                                                      if(gRTC_Month==2)
+ 305   6                                                      {
+ 306   7                                                              if((gRTC_Year % 4) ==0)//ÕâÀïÊýÖµÊÇ2018-2099£¬ËùÒÔ²»ÓÃ"gRTC_Year % 100"
+ 307   7                                                              {
+ 308   8                                                                      Flag_LeapYear=1;//ÈòÄê
+ 309   8                                                              }
+ 310   7                                                              else
+ 311   7                                                              {
+ 312   8                                                                      Flag_LeapYear=0;
+ 313   8                                                              }
+ 314   7                                                      }
+ 315   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 316   6                                                      break;
+ 317   6                                              }
+ 318   5                                              case ADJ_MONTH:
+ 319   5                                              {
+ 320   6                                                      if(--gRTC_Month<1)
+ 321   6                                                              gRTC_Month=12;
+ 322   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 323   6                                                      break;
+ 324   6                                              }
+ 325   5                                              case ADJ_DAY:
+ 326   5                                              {
+ 327   6                                                      if(--gRTC_Day<1)
+ 328   6                                                      {
+ 329   7                                                              if(gRTC_Month==2)
+ 330   7                                                              {
+ 331   8                                                                      if(Flag_LeapYear==1)
+ 332   8                                                                              gRTC_Day=29;    //ÈòÄê
+ 333   8                                                                      else
+ 334   8                                                                              gRTC_Day=28;
+ 335   8                                                              }
+ 336   7                                                              else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+ 337   7                                                                      gRTC_Day=30;
+ 338   7                                                              else
+ 339   7                                                                      gRTC_Day=31;
+ 340   7                                                      }
+ 341   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 342   6                                                      break;
+ 343   6                                              }
+ 344   5                                              case ADJ_HOUR:
+ 345   5                                              {
+ 346   6                                                      if(--gRTC_Hour<0)
+ 347   6                                                              gRTC_Hour=23;
+ 348   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 349   6                                                      break;
+ 350   6                                              }
+ 351   5                                              case ADJ_MINUTE:
+ 352   5                                              {
+ 353   6                                                      if(--gRTC_Minute<0)
+ 354   6                                                              gRTC_Minute=59;
+ 355   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+ 356   6                                                      break;
+ 357   6                                              }
+ 358   5                                              case ADJ_DAYLIGHT_SAVING_ZONES:  //ÏÄÁîÊ±ÇøÑ¡Ôñ
+ 359   5                                              {
+ 360   6                                                      if(--gRTC_Zone<1)
+ 361   6                                                              gRTC_Zone=7;
+ 362   6                                                      cntDisplayStatus=cDISP_DELAY_2SEC;
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 7   
+
+ 363   6                                                      break;
+ 364   6                                              }
+ 365   5                                              case ADJ_SNOOZE_TIME:
+ 366   5                                              {
+ 367   6                                                      if(AL1_TD.snoozeTime>0)
+ 368   6                                                              AL1_TD.snoozeTime--;
+ 369   6                                                      break;
+ 370   6                                              }
+ 371   5                                              default:
+ 372   5                                                      break;
+ 373   5                                      }
+ 374   4                                      break;
+ 375   4                              }
+ 376   3                              case KU(K_SNOOZE_DIMMER): 
+ 377   3                              {
+ 378   4                                      
+ 379   4                                      break;
+ 380   4                              }
+ 381   3                              case KH(K_SNOOZE_DIMMER):
+ 382   3                              {
+ 383   4                                      
+ 384   4                                      break;
+ 385   4                              }
+ 386   3                              case KU(K_ALARM): 
+ 387   3                              {
+ 388   4                                      if(Flag_DisplayStatus==ADJ_YEAR)//
+ 389   4                                      {
+ 390   5                                              SetDisplayState2s(ADJ_MONTH);//ÉèÖÃÔÂ·Ý
+ 391   5                                              gRTC_Sec = 0;
+ 392   5                                      }
+ 393   4                                      else if(Flag_DisplayStatus==ADJ_MONTH)//
+ 394   4                                      {
+ 395   5                                              SetDisplayState2s(ADJ_DAY);//ÉèÖÃÈÕÆÚ
+ 396   5                                              gRTC_Sec = 0;
+ 397   5                                      }
+ 398   4                                      else if(Flag_DisplayStatus==ADJ_DAY)//
+ 399   4                                      {
+ 400   5                                              SetDisplayState2s(ADJ_HOUR);//ÉèÖÃÐ¡Ê±
+ 401   5                                              gRTC_Sec = 0;
+ 402   5                                      }
+ 403   4                                      else if(Flag_DisplayStatus==ADJ_HOUR)//
+ 404   4                                      {
+ 405   5                                              SetDisplayState2s(ADJ_MINUTE);//ÉèÖÃ·ÖÖÓ
+ 406   5                                              gRTC_Sec = 0;
+ 407   5                                      }
+ 408   4                                      else if(Flag_DisplayStatus==ADJ_MINUTE)//
+ 409   4                                      {
+ 410   5                                              SetDisplayState2s(ADJ_DAYLIGHT_SAVING_ZONES);//ÉèÖÃÏÄÁîÊ±È¥Ñ¡Ôñ
+ 411   5                                              gRTC_Sec = 0;
+ 412   5                                      }
+ 413   4                                      else if(Flag_DisplayStatus==ADJ_DAYLIGHT_SAVING_ZONES)//
+ 414   4                                      {
+ 415   5                                              SetDisplayState2s(ADJ_SNOOZE_TIME);//ÉèÖÃÌ°Ë¯Ê±¼ä
+ 416   5                                              gRTC_Sec = 0;
+ 417   5                                      }
+ 418   4                                      break;
+ 419   4                              }
+ 420   3                              case KH(K_ALARM):
+ 421   3                              {
+ 422   4                                      
+ 423   4                                      break;
+ 424   4                              }
+C51 COMPILER V9.00   KEY_MODE                                                              12/04/2018 17:30:27 PAGE 8   
+
+ 425   3                              case KR(K_AL_SN):
+ 426   3                              {
+ 427   4                                      if(cntKeyLong>=15)//³¤°´6sÉèÖÃRTCÊ±¼ä
+ 428   4                                      {
+ 429   5                                              SetDisplayState2s(ADJ_YEAR);
+ 430   5                                              gRTC_Sec = 0;
+ 431   5                                      }
+ 432   4                                      break;
+ 433   4                              }
+ 434   3                              default:
+ 435   3                                      break;
+ 436   3                      }
+ 437   2              }
+ 438   1      }
+ 439          
+ 440          
+ 441          
+ 442          
+ 443          
+ 444          
+ 445          
+ 446          
+ 447          
+ 448          
+ 449          
+ 450          
+ 451          
+ 452          
+ 453          
+ 454          
+ 455          
+ 456          
+ 457          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    761    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      9    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

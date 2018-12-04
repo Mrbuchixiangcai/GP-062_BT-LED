@@ -1,0 +1,9 @@
+"..\Object\STARTUP.obj",
+"..\Object\main.obj",
+"..\Object\app_main.obj",
+"..\Object\BT_Mode.obj",
+"..\Object\Key_Mode.obj",
+"..\Object\LED_Drive.obj",
+"..\Object\LED_Mode.obj" 
+TO "..\Object\GP-062_BT-LED" 
+PRINT(".\Listings\GP-062_BT-LED.m51") RAMSIZE(256) 
