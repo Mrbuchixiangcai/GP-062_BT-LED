@@ -29,10 +29,12 @@
 #define  cKEY_RATE_VOL  20  //连击时间常数
 
 /*按键定义端口*/
-#define  KEY_ADD_DEC()   (P1&0x01) //P10 音量加键
-#define  KEY_SUB_DEC()   (P1&0x02) //P11 音量减键  subtract
+#define  KEY_ADD_DEC()    (P1&0x01) //P10 音量加键
+#define  KEY_SUB_DEC()    (P1&0x02) //P11 音量减键  subtract
 #define  KEY_SNOOZE_DEC() (P1&0x04) //P12 贪睡键 
 #define  KEY_ALARM_DEC()  (P1&0x08) //P13 闹钟键
+
+#define CHECK_DC_DEC()    (P2&0x01)//P20  检测电压
 
 
 /*************************************************************/

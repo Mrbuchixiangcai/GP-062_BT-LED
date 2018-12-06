@@ -19,26 +19,9 @@
 /*************************************************************/
 enum
 {
-	BT_NONE    = 0,
-	BT_PAIR       ,//配对//8字符
-	BT_LINK_BACK  ,//回连
-	
-	BT_PLAY       ,//播放//9字符
-	BT_PAUSE      ,//暂停
-	BT_PLAY_PAUSE ,//播放/暂停
-	BT_PREV       ,//上一曲
-	BT_NEXT       ,//下一曲
-	BT_IQ		  ,//查询状态
-	BT_DISCONN    ,//断开连接
-	BT_QUERY_VOL  ,//获取音量值
-	BT_NEXT_WORK  ,//切换到下一工作模式
-	
-	BT_POWER_DOWN ,//10//关机//10字符
-	BT_SDO		  ,//TF卡插入告诉蓝牙
-	BT_SDF		  ,//TF卡拔出告诉蓝牙
-	BT_TF_CARD	  ,//切换到TF卡模式
-	BT_MODE		  ,//从TF卡模式切回蓝牙模式
-	BT_VOL	      ,//音量
+	BT_NONE		= 0,
+	BT_VOLINC	,//音量加
+	BT_VOLDEC	,//音量减
 };
 
 /*************************************************************/
@@ -48,15 +31,6 @@ enum
 /*************************************************************/
 /*变量定义Variable Definition**********************************/
 /*************************************************************/
-extern uint8_t  idata bt_cmd;
-extern uint8_t  idata cntMuteBT;
-extern uint8_t  idata bt_Volume;
-extern uint8_t  idata uart1_RX_Pointer;
-extern uint8_t  idata uart1_TX_Pointer;
-extern uint8_t  idata uart1_EnableSend;
-extern uint8_t  idata uart1_TX_Timeout;
-extern uint8_t  idata uart1_RX_Timeout;
-extern uint8_t  idata Uart_Len;//本来是UART1_LEN_BUFFER，但是这是临时
 
 /*************************************************************/
 /*数组定义Array Definition************************************/
@@ -65,6 +39,7 @@ extern uint8_t  idata Uart_Len;//本来是UART1_LEN_BUFFER，但是这是临时
 /*************************************************************/
 /*函数声明Function Declaration*********************************/
 /*************************************************************/
+void BlueMode_Handle(void);
 
 /*************************************************************/
 /*函数定义Function Definition**********************************/
@@ -81,14 +56,33 @@ extern uint8_t  idata Uart_Len;//本来是UART1_LEN_BUFFER，但是这是临时
 /*************************************************************/
 /*外部调用_标志位定义Flags Definition***************************/
 /*************************************************************/
+extern bit Flag_BT_work;
+extern bit Flag_BT_Connect;//蓝牙连接标志位
+extern uint8_t Flag_BT_Play;   //蓝牙播放,1是在播放，0是在暂停(停止)
+extern bit Flag_UART1_RX_Finish_A;
+extern bit Flag_UART1_RX_Finish_B;
+extern bit Flag_UART_ReceiveBuffer_A_B;
+extern bit Flag_BT_TF_Play;//蓝牙TF卡播放模式，1正在播放，0是在暂停(停止)
+extern uint8_t Flag_BT_Pairing;//蓝牙一开机，但是没有连接，处在配对状态，为1为配对
 
 /*************************************************************/
 /*外部调用_变量定义Variable Definition*************************/
 /*************************************************************/
+extern uint8_t  idata bt_cmd;
+extern uint8_t  idata cntMuteBT;
+extern uint8_t  idata bt_Volume;
+extern uint8_t  idata uart1_RX_Pointer;
+extern uint8_t  idata uart1_TX_Pointer;
+extern uint8_t  idata uart1_EnableSend;
+extern uint8_t  idata uart1_TX_Timeout;
+extern uint8_t  idata uart1_RX_Timeout;
+extern uint8_t  idata Uart_Len;//本来是UART1_LEN_BUFFER，但是这是临时
 
 /*************************************************************/
 /*外部调用_数组定义Array Definition****************************/
-/*************************************************************/
+extern uint8_t  uart1_TransmitBuffer[UART1_LEN_BUFFER];
+extern uint8_t  idata uart1_ReceiveBuffer_A[UART1_LEN_BUFFER];
+extern uint8_t  idata uart1_ReceiveBuffer_B[UART1_LEN_BUFFER];/*************************************************************/
 
 /*************************************************************/
 /*外部调用_函数声明Function Declaration************************/

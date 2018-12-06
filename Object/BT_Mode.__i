@@ -1,1 +1,1 @@
-"..\Hardware\BT\BT_Mode.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED) DEBUG OBJECTEXTEND PRINT(.\Listings\BT_Mode.lst) OBJECT(..\Object\BT_Mode.obj)
+"..\Hardware\BT\BT_Mode.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED;..\Hardware\SystemSleep) DEBUG OBJECTEXTEND PRINT(.\Listings\BT_Mode.lst) OBJECT(..\Object\BT_Mode.obj)

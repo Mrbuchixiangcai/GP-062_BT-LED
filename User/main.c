@@ -16,6 +16,7 @@ void main()
 	cli();          	// disable INT. during peripheral setting
 	port_init();    	// initialize ports
 	clock_init();   	// initialize operation clock
+	BUZ_init();     	// initialize Buzzer
 	LCD_init();     	// initialize LCD
 	Timer0_init();  	// initialize Timer0
 	Timer3_init();  	// initialize Timer3
@@ -39,14 +40,44 @@ void INT_UART_Rx() interrupt 9
 	uint8_t temp_RxData;
 	temp_RxData=UARTDR;
 	UARTST &= (~0x20);  //置零中断标志，不然会一直进来
+	uart1_RX_Timeout=10;
+	if(Flag_UART_ReceiveBuffer_A_B)
+	{
+		if(uart1_RX_Pointer<UART1_LEN_BUFFER)
+			uart1_ReceiveBuffer_A[uart1_RX_Pointer++]=temp_RxData;
+		if(temp_RxData==0x55)
+		{
+			uart1_RX_Pointer=0;
+			Flag_UART1_RX_Finish_A=1;
+			Flag_UART_ReceiveBuffer_A_B=~Flag_UART_ReceiveBuffer_A_B;
+		}
+	}
+	else
+	{
+		if(uart1_RX_Pointer<UART1_LEN_BUFFER)
+			uart1_ReceiveBuffer_B[uart1_RX_Pointer++]=temp_RxData;
+		if(temp_RxData==0x55)
+		{
+			uart1_RX_Pointer=0;
+			Flag_UART1_RX_Finish_B=1;
+			Flag_UART_ReceiveBuffer_A_B=~Flag_UART_ReceiveBuffer_A_B;
+		}
+	}
 }
 
 void INT_UART_Tx() interrupt 10
 {
 	// UART Tx interrupt
 	// TODO: add your code here
+	//read_UARTData=UARTST;
 	UARTST &= ~0x80;
-	
+	if(uart1_EnableSend)
+	{
+		uart1_TX_Timeout=10;
+		UARTDR=uart1_TransmitBuffer[uart1_TX_Pointer++];
+		if(uart1_TransmitBuffer[(uart1_TX_Pointer-1)]==0x55)
+			uart1_EnableSend=0;
+	}
 }
 
 void INT_Timer0() interrupt 13
@@ -101,6 +132,7 @@ void INT_WT() interrupt 20
 //			}
 //		}
 	}
+	Flag_Dot=~Flag_Dot;
 	
 }
 
@@ -115,6 +147,20 @@ unsigned char UART_read()
 	while(!(UARTST & 0x20));	// wait
 	dat = UARTDR;   	// read
 	return	dat;
+}
+
+void BUZ_OnOff(unsigned char On)
+{
+	// Buzzer ON(On=1) / OFF(On=0)
+	BUZCR = (On)? (BUZCR | 1) : (BUZCR & (~1));	// ON / OFF
+}
+
+void BUZ_init()
+{
+	// initialize Buzzer
+	// Frequency (Hz) = 1000.000000
+	BUZCR = 0x00;   	// clock source
+	BUZDR = 0xF9;   	// count value
 }
 
 void LCD_init()
@@ -169,15 +215,22 @@ void WT_init()
 	// initialize Watch timer
 	WTCR = 0x88;    	// setting
 	WTDR = 0x01;    	// set duty
-	WTDR = 0x81;    	// clear WT
+	WTDR = 0x80;    	// clear WT
 	IE3 |= 0x04;    	// Enable WT interrupt
 }
 
 void clock_init()
 {
 	// internal RC clock (16.000000MHz)
-	OSCCR = 0x28;   	// Set Int. OSC
-	SCCR = 0x00;    	// Use Int. OSC
+	//OSCCR = 0x29;   	// Set Int. OSC
+	OSCCR = (IRCS_16MHZ | IRC_EN | (1 << SCLKE));
+	SCCR  = 0x00;    	// Use Int. OSC
+//	// external clock//外部时钟源配置
+//	OSCCR = 0x0A;   	// Enable int. 1MHz and Ext. OSC
+//	BITCR = 0x09;   	// Set waiting time : 16ms@1MHz
+//	while((BITCR & 0x80) == 0);	// Ext. OSC stabilizing time
+//	SCCR = 0x01;    	// Change to Ext. OSC
+//	OSCCR |= 0x04;  	// Disable Int. OSC
 }
 
 void port_init()
@@ -242,7 +295,7 @@ void port_init()
 	P6   = 0x00;    	// port initial value
 
 	// Set port functions
-	P0FSR = 0x02;   	// P0 selection
+	P0FSR = 0x02;   	// P0 selection//开启BUZE
 	P2FSR = 0x00;   	// P2 selection
 	P3FSR = 0x00;   	// P3 selection
 	P4FSR = 0x00;   	// P4 selection

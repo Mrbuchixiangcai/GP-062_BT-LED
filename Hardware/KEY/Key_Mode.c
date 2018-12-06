@@ -205,177 +205,263 @@ void KeyComMsg(void)
 			case KU(K_VOLINC): //value67 没有break所以继续执行下一条语句
 			case KR(K_VOLINC): //value131
 			{
-				switch(Flag_DisplayStatus)
+				if(Flag_DisplayStatus==0)//为0说明不是其他操作，是音量操作
 				{
-					case ADJ_YEAR:
+					bt_cmd=BT_VOLINC;
+				}
+				else
+				{
+					switch(Flag_DisplayStatus)
 					{
-						if(++gRTC_Year > 99)
-							gRTC_Year=18;
-						if(gRTC_Month==2)
+						case ADJ_YEAR: //设置年份
 						{
-							if((gRTC_Year % 4) ==0)//这里数值是2018-2099，所以不用"gRTC_Year % 100"
+							if(++gRTC_Year > 99)
+								gRTC_Year=18;
+							if(gRTC_Month==2)
 							{
-								Flag_LeapYear=1;//闰年
+								if((gRTC_Year % 4) ==0)//这里数值是2018-2099，所以不用"gRTC_Year % 100"
+								{
+									Flag_LeapYear=1;//闰年
+								}
+								else
+								{
+									Flag_LeapYear=0;
+								}
 							}
-							else
-							{
-								Flag_LeapYear=0;
-							}
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
 						}
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_MONTH:
-					{
-						if(--gRTC_Month<1)
-							gRTC_Month=12;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_DAY:
-					{
-						gRTC_Day++;
-						if(gRTC_Month==2)
+						case ADJ_MONTH://设置月份
 						{
-							if(Flag_LeapYear==1)//闰年
+							if(--gRTC_Month<1)
+								gRTC_Month=12;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_DAY://设置日期
+						{
+							gRTC_Day++;
+							if(gRTC_Month==2)
 							{
-								if(gRTC_Day>29)
+								if(Flag_LeapYear==1)//闰年
+								{
+									if(gRTC_Day>29)
+										gRTC_Day=1;
+								}
+								else
+								{
+									if(gRTC_Day>28)
+										gRTC_Day=1;
+								}
+							}
+							else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+							{
+								if(gRTC_Day>30)
 									gRTC_Day=1;
 							}
 							else
 							{
-								if(gRTC_Day>28)
+								if(gRTC_Day>31)
 									gRTC_Day=1;
 							}
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
 						}
-						else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+						case ADJ_HOUR: //设置RTC小时
 						{
-							if(gRTC_Day>30)
-								gRTC_Day=1;
+							if(++gRTC_Hour>23)
+								gRTC_Hour=0;
+	//						if (Flag_12HourDisplay)//12小时制显示
+	//						{
+	//							if(gRTC_Hour<12)//如果小于12则是凌晨0点到11:59，为上午
+	//							{
+	//								Flag_APM=0;  //上午
+	//							}
+	//							else if (gRTC_Hour > 12)  
+	//							{
+	//								Flag_APM = 1;   //如果大于12则是12:00到23:59，为下午//标志位为1，设置对应的LED是否亮起
+	//								gRTC_Hour -= 12;//因为是12小时制，所以下午的时间也是12小时制显示，要减12
+	//							}
+	//							if (gRTC_Hour == 0) //零点是显示12的，中午12点也是显示12的
+	//							{
+	//								gRTC_Hour = 12;
+	//							}
+	//						}
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
 						}
-						else
+						case ADJ_MINUTE://设置RTC分钟
 						{
-							if(gRTC_Day>31)
-								gRTC_Day=1;
+							if(++gRTC_Minute>59)
+								gRTC_Minute=0;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
 						}
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
+						case ADJ_DAYLIGHT_SAVING_ZONES://设置夏令时区
+						{
+							if(++gRTC_Zone>8)
+								gRTC_Zone=1;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_SNOOZE_TIME://设置贪睡时间
+						{
+							if(++AL1_TD.snoozeTime>10)
+								AL1_TD.snoozeTime=1;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_ALARM1_HOUR: //设置闹钟小时
+							if(++AL1_TD.hour>23)
+								AL1_TD.hour=0;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						case ADJ_ALARM1_MINUTE: //设置闹钟分钟
+							if(++AL1_TD.minute>59)
+								AL1_TD.minute=0;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						default:
+							break;
 					}
-					case ADJ_HOUR:
-					{
-						if(++gRTC_Hour>23)
-							gRTC_Hour=0;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_MINUTE:
-					{
-						if(++gRTC_Minute>59)
-							gRTC_Minute=0;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_DAYLIGHT_SAVING_ZONES:
-					{
-						if(++gRTC_Zone>7)
-							gRTC_Zone=1;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_SNOOZE_TIME:
-					{
-						AL1_TD.snoozeTime++;
-						break;
-					}
-					default:
-						break;
+					cntNoFlash=cDISP_DELAY_500ms;//每次进来就有1s不闪烁，为了在长按增加/减小时第一次进来是KU(),第二次才是KR()
 				}
 				break;
 			}
 			case KU(K_VOLDEC): //value68
 			case KR(K_VOLDEC): //value132
 			{
-				switch(Flag_DisplayStatus)
+				if(Flag_DisplayStatus==0)//为0说明不是其他操作，是音量操作
 				{
-					case ADJ_YEAR:
+					bt_cmd=BT_VOLDEC;//音量减
+				}
+				else
+				{
+					switch(Flag_DisplayStatus)
 					{
-						if(--gRTC_Year < 18)
-							gRTC_Year=99;
-						if(gRTC_Month==2)
+						case ADJ_YEAR://摄制年份
 						{
-							if((gRTC_Year % 4) ==0)//这里数值是2018-2099，所以不用"gRTC_Year % 100"
-							{
-								Flag_LeapYear=1;//闰年
-							}
-							else
-							{
-								Flag_LeapYear=0;
-							}
-						}
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_MONTH:
-					{
-						if(--gRTC_Month<1)
-							gRTC_Month=12;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_DAY:
-					{
-						if(--gRTC_Day<1)
-						{
+							if(--gRTC_Year < 18)
+								gRTC_Year=99;
 							if(gRTC_Month==2)
 							{
-								if(Flag_LeapYear==1)
-									gRTC_Day=29;	//闰年
+								if((gRTC_Year % 4) ==0)//这里数值是2018-2099，所以不用"gRTC_Year % 100"
+								{
+									Flag_LeapYear=1;//闰年
+								}
 								else
-									gRTC_Day=28;
+								{
+									Flag_LeapYear=0;
+								}
 							}
-							else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
-								gRTC_Day=30;
-							else
-								gRTC_Day=31;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
 						}
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
+						case ADJ_MONTH://设置月份
+						{
+							if(--gRTC_Month<1)
+								gRTC_Month=12;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_DAY://设置日期
+						{
+							if(--gRTC_Day<1)
+							{
+								if(gRTC_Month==2)
+								{
+									if(Flag_LeapYear==1)
+										gRTC_Day=29;	//闰年
+									else
+										gRTC_Day=28;
+								}
+								else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+									gRTC_Day=30;
+								else
+									gRTC_Day=31;
+							}
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_HOUR://设置RTC小时
+						{
+							if(--gRTC_Hour<0)
+								gRTC_Hour=23;
+	//						if (Flag_12HourDisplay)//12小时制显示
+	//						{
+	//							if(gRTC_Hour<12)//如果小于12则是凌晨0点到11:59，为上午
+	//							{
+	//								Flag_APM=0;  //上午
+	//							}
+	//							else if (gRTC_Hour > 12)  
+	//							{
+	//								Flag_APM = 1;   //如果大于12则是12:00到23:59，为下午//标志位为1，设置对应的LED是否亮起
+	//								gRTC_Hour -= 12;//因为是12小时制，所以下午的时间也是12小时制显示，要减12
+	//							}
+	//							if (gRTC_Hour == 0) //零点是显示12的，中午12点也是显示12的
+	//							{
+	//								gRTC_Hour = 12;
+	//							}
+	//						}
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_MINUTE://设置RTC分钟
+						{
+							if(--gRTC_Minute<0)
+								gRTC_Minute=59;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_DAYLIGHT_SAVING_ZONES:  //夏令时区选择
+						{
+							if(--gRTC_Zone<1)
+								gRTC_Zone=8;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_SNOOZE_TIME://设置贪睡时间
+						{
+							if(--AL1_TD.snoozeTime<1)
+								AL1_TD.snoozeTime=10;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						}
+						case ADJ_ALARM1_HOUR: //设置闹钟小时
+							if(--AL1_TD.hour<0)
+								AL1_TD.hour=23;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						case ADJ_ALARM1_MINUTE: //设置闹钟分钟
+							if(--AL1_TD.minute<0)
+								AL1_TD.minute=59;
+							cntDisplayStatus=cDISP_DELAY_5SEC;
+							break;
+						default:
+							break;
 					}
-					case ADJ_HOUR:
-					{
-						if(--gRTC_Hour<0)
-							gRTC_Hour=23;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_MINUTE:
-					{
-						if(--gRTC_Minute<0)
-							gRTC_Minute=59;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_DAYLIGHT_SAVING_ZONES:  //夏令时区选择
-					{
-						if(--gRTC_Zone<1)
-							gRTC_Zone=7;
-						cntDisplayStatus=cDISP_DELAY_2SEC;
-						break;
-					}
-					case ADJ_SNOOZE_TIME:
-					{
-						if(AL1_TD.snoozeTime>0)
-							AL1_TD.snoozeTime--;
-						break;
-					}
-					default:
-						break;
+					cntNoFlash=cDISP_DELAY_500ms;//每次进来就有1s不闪烁，为了在长按增加/减小时第一次进来是KU(),第二次才是KR()
 				}
 				break;
 			}
 			case KU(K_SNOOZE_DIMMER): 
 			{
-				
+				if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON))//闹钟开启，并且在运行
+				{
+					AL1_TD.Snooze_TD=ALARM_SNOOZE_ON;//开启贪睡
+					AL1_TD.snoozeHour=gRTC_Hour;//按下贪睡按键把当前的RTC时间赋值给贪睡计时，贪睡时间到时再响闹
+					AL1_TD.snoozeMinute=gRTC_Minute;
+					break;
+				}
+				else if(Flag_DisplayStatus==0)
+				{
+					if(gbDimmer==18)//这里形成三级调光
+						gbDimmer=10;
+					else if(gbDimmer==10)
+						gbDimmer=6;
+					else if(gbDimmer==6)
+						gbDimmer=18;
+				}
 				break;
 			}
 			case KH(K_SNOOZE_DIMMER):
@@ -385,6 +471,8 @@ void KeyComMsg(void)
 			}
 			case KU(K_ALARM): 
 			{
+				/*年月日、RTC时间、夏令时区和贪睡时间设置*/
+				cntNoFlash=cDISP_DELAY_500ms;//每次进来就有1s不闪烁，为了在长按增加/减小时第一次进来是KU(),第二次才是KR()
 				if(Flag_DisplayStatus==ADJ_YEAR)//
 				{
 					SetDisplayState2s(ADJ_MONTH);//设置月份
@@ -415,6 +503,33 @@ void KeyComMsg(void)
 					SetDisplayState2s(ADJ_SNOOZE_TIME);//设置贪睡时间
 					gRTC_Sec = 0;
 				}
+				
+				/*设置闹钟*/
+				if(AL1_TD.OnOff_TD==ALARM_ON)
+				{
+					//如果闹钟在打开状态，但是还没有响闹，短按ALARM就关闭
+					Alarm1PowerOFF();
+				}
+				else if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON))
+				{
+					//如果闹钟在运行，那短按ALARM键关闭闹钟
+					Alarm1PowerOFF();
+				}
+				else if(Flag_DisplayStatus==0)
+				{
+					SetDisplayState2s(ADJ_ALARM1_HOUR);//设置闹钟小时
+					AL1_TD.OnOff_TD=ALARM_ON;//开闹钟
+				}
+				else if(Flag_DisplayStatus==ADJ_ALARM1_HOUR)
+				{
+					SetDisplayState2s(ADJ_ALARM1_MINUTE);//设置闹钟小时
+				}
+				else if(Flag_DisplayStatus==ADJ_ALARM1_MINUTE)
+				{
+					Flag_DisplayStatus=0;//确认闹钟时间,
+					cntDisplayStatus=0;//不闪烁，
+					cntNoFlash=0;//
+				}
 				break;
 			}
 			case KH(K_ALARM):
@@ -424,7 +539,7 @@ void KeyComMsg(void)
 			}
 			case KR(K_AL_SN):
 			{
-				if(cntKeyLong>=15)//长按6s设置RTC时间
+				if(cntKeyLong>=5)//长按1s设置RTC时间
 				{
 					SetDisplayState2s(ADJ_YEAR);
 					gRTC_Sec = 0;

@@ -89,33 +89,33 @@ void DigNum2(uint8_t dat)
 {
 	dat = DisplayCode[dat];
 	if(dat & (1 << S_A))
-		SET_4A();
+		SET_2A();
 	else 
-		CLR_4A();
+		CLR_2A();
 	if(dat & (1 << S_B))
-		SET_4B();
+		SET_2B();
 	else 
-		CLR_4B();
+		CLR_2B();
 	if(dat & (1 << S_C))
-		SET_4C();
+		SET_2C();
 	else 
-		CLR_4C();
+		CLR_2C();
 	if(dat & (1 << S_D))
-		SET_4D();
+		SET_2D();
 	else 
-		CLR_4D();
+		CLR_2D();
 	if(dat & (1 << S_E))
-		SET_4E();
+		SET_2E();
 	else 
-		CLR_4E();
+		CLR_2E();
 	if(dat & (1 << S_F))
-		SET_4F();
+		SET_2F();
 	else 
-		CLR_4F();
+		CLR_2F();
 	if((dat & (1 << S_G)) || (dat & (1 << S__)))
-		SET_4G();
+		SET_2G();
 	else 
-		CLR_4G();
+		CLR_2G();
 }
 
 
@@ -184,33 +184,33 @@ void DigNum4(uint8_t dat)
 {
 	dat = DisplayCode[dat];
 	if(dat & (1 << S_A))
-		SET_2A();
+		SET_4A();
 	else 
-		CLR_2A();
+		CLR_4A();
 	if(dat & (1 << S_B))
-		SET_2B();
+		SET_4B();
 	else 
-		CLR_2B();
+		CLR_4B();
 	if(dat & (1 << S_C))
-		SET_2C();
+		SET_4C();
 	else 
-		CLR_2C();
+		CLR_4C();
 	if(dat & (1 << S_D))
-		SET_2D();
+		SET_4D();
 	else 
-		CLR_2D();
+		CLR_4D();
 	if(dat & (1 << S_E))
-		SET_2E();
+		SET_4E();
 	else 
-		CLR_2E();
+		CLR_4E();
 	if(dat & (1 << S_F))
-		SET_2F();
+		SET_4F();
 	else 
-		CLR_2F();
+		CLR_4F();
 	if(dat & (1 << S_G))
-		SET_2G();
+		SET_4G();
 	else 
-		CLR_2G();
+		CLR_4G();
 }
 
 /*******************************************************************************
@@ -229,24 +229,38 @@ void DigNum4(uint8_t dat)
 *******************************************************************************/
 void LEDDisplayDrive(void)
 {
-	mP2=0xFF;
+	mP2=0x00;
 	mP3=0xFF;
 	
 	if(++PWMCycle >= MAX_PWM) //PWM周期循环
 	{
 		PWMCycle=0;
-//		if(++ScanCom >= 4)
-//			ScanCom=0;
-		ScanCom=1;
+		if(++ScanCom >= 4)
+			ScanCom=0;
 		
 	}
 	if(PWMCycle >= gbDimmer)//如果大于设定的亮度值，就全灭，这样形成循环就是PWM
 	{
-		P2 = mP2 = 0xFF;
-		P3 = mP3 = 0xFF;
+		P2 = mP2 = 0x00;
 		P3 = mP3 = 0xFF;
 	}
 	else if (ScanCom == 0)
+	{
+		COM4(LED_ON);
+		if(LED_Tmp4 & BIT0) //ALA
+			SEG1(LED_ON);
+		if(LED_Tmp4 & BIT1) //1B
+			SEG2(LED_ON);
+		if(LED_Tmp4 & BIT2) //1C
+			SEG3(LED_ON);
+		if(LED_Tmp4 & BIT3) //APM
+			SEG4(LED_ON);
+		if(LED_Tmp4 & BIT4) //CL1
+			SEG5(LED_ON);
+		if(LED_Tmp4 & BIT5) //CL
+			SEG6(LED_ON);
+	}
+	else if (ScanCom == 1)
 	{
 		COM1(LED_ON);
 		if(LED_Tmp1 & BIT0) //2A
@@ -264,7 +278,7 @@ void LEDDisplayDrive(void)
 		if(LED_Tmp1 & BIT6) //2G
 			SEG7(LED_ON);
 	}
-	else if (ScanCom == 1)
+	else if (ScanCom == 2)
 	{
 		COM2(LED_ON);
 		if(LED_Tmp2 & BIT0) //3A
@@ -282,7 +296,7 @@ void LEDDisplayDrive(void)
 		if(LED_Tmp2 & BIT6) //3G
 			SEG7(LED_ON);
 	}
-	else if (ScanCom == 2)
+	else if (ScanCom == 3)
 	{
 		COM3(LED_ON);
 		if(LED_Tmp3 & BIT0) //4A
@@ -300,25 +314,13 @@ void LEDDisplayDrive(void)
 		if(LED_Tmp3 & BIT6) //4G
 			SEG7(LED_ON);
 	}
-	else if (ScanCom == 3)
-	{
-		COM4(LED_ON);
-		if(LED_Tmp4 & BIT0) //ALA
-			SEG1(LED_ON);
-		if(LED_Tmp4 & BIT1) //1B
-			SEG2(LED_ON);
-		if(LED_Tmp4 & BIT2) //1C
-			SEG3(LED_ON);
-		if(LED_Tmp4 & BIT3) //PM
-			SEG4(LED_ON);
-		if(LED_Tmp4 & BIT4) //CL1
-			SEG5(LED_ON);
-		if(LED_Tmp4 & BIT5) //CL
-			SEG6(LED_ON);
-	}
 	P2 = mP2; //这里统一赋值，消除时间差
 	P3 = mP3; 
-	P3 = mP3;//测试用
+//	P2 = 0;
+//	P3 = 0xFF;
+//	P2 = 0x10;
+//	P3 = 0x00;
+//	P3 = 0xFF;
 }
 
 /*******************************************************************************

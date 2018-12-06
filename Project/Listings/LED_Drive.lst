@@ -1,11 +1,11 @@
-C51 COMPILER V9.00   LED_DRIVE                                                             12/04/2018 17:50:11 PAGE 1   
+C51 COMPILER V9.00   LED_DRIVE                                                             12/06/2018 14:18:27 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE LED_DRIVE
 OBJECT MODULE PLACED IN ..\Object\LED_Drive.obj
 COMPILER INVOKED BY: D:\ProgramFiles\Keil_v5\C51\BIN\C51.EXE ..\Hardware\LED\LED_Drive.c OPTIMIZE(8,SPEED) BROWSE INCDIR
-                    -(..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED) DEBUG OBJECTEXTEND PRINT(.\Listings\LED_Drive.lst) 
-                    -OBJECT(..\Object\LED_Drive.obj)
+                    -(..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED;..\Hardware\SystemSleep) DEBUG OBJECTEXTEND PRINT(.\
+                    -Listings\LED_Drive.lst) OBJECT(..\Object\LED_Drive.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   51          * 函数功能：
   52          * 返回值说明：
   53          * 创建日期：
-C51 COMPILER V9.00   LED_DRIVE                                                             12/04/2018 17:50:11 PAGE 2   
+C51 COMPILER V9.00   LED_DRIVE                                                             12/06/2018 14:18:27 PAGE 2   
 
   54          * 创建人：
   55          * 修改日期
@@ -102,35 +102,35 @@ line level    source
   89          {
   90   1              dat = DisplayCode[dat];
   91   1              if(dat & (1 << S_A))
-  92   1                      SET_4A();
+  92   1                      SET_2A();
   93   1              else 
-  94   1                      CLR_4A();
+  94   1                      CLR_2A();
   95   1              if(dat & (1 << S_B))
-  96   1                      SET_4B();
+  96   1                      SET_2B();
   97   1              else 
-  98   1                      CLR_4B();
+  98   1                      CLR_2B();
   99   1              if(dat & (1 << S_C))
- 100   1                      SET_4C();
+ 100   1                      SET_2C();
  101   1              else 
- 102   1                      CLR_4C();
+ 102   1                      CLR_2C();
  103   1              if(dat & (1 << S_D))
- 104   1                      SET_4D();
+ 104   1                      SET_2D();
  105   1              else 
- 106   1                      CLR_4D();
+ 106   1                      CLR_2D();
  107   1              if(dat & (1 << S_E))
- 108   1                      SET_4E();
+ 108   1                      SET_2E();
  109   1              else 
- 110   1                      CLR_4E();
+ 110   1                      CLR_2E();
  111   1              if(dat & (1 << S_F))
- 112   1                      SET_4F();
+ 112   1                      SET_2F();
  113   1              else 
- 114   1                      CLR_4F();
+ 114   1                      CLR_2F();
  115   1              if((dat & (1 << S_G)) || (dat & (1 << S__)))
-C51 COMPILER V9.00   LED_DRIVE                                                             12/04/2018 17:50:11 PAGE 3   
+C51 COMPILER V9.00   LED_DRIVE                                                             12/06/2018 14:18:27 PAGE 3   
 
- 116   1                      SET_4G();
+ 116   1                      SET_2G();
  117   1              else 
- 118   1                      CLR_4G();
+ 118   1                      CLR_2G();
  119   1      }
  120          
  121          
@@ -190,7 +190,7 @@ line level    source
  175          * 创建日期：
  176          * 创建人：
  177          * 修改日期
-C51 COMPILER V9.00   LED_DRIVE                                                             12/04/2018 17:50:11 PAGE 4   
+C51 COMPILER V9.00   LED_DRIVE                                                             12/06/2018 14:18:27 PAGE 4   
 
  178          * 修改人：
  179          * 第N次修改：
@@ -201,33 +201,33 @@ line level    source
  184          {
  185   1              dat = DisplayCode[dat];
  186   1              if(dat & (1 << S_A))
- 187   1                      SET_2A();
+ 187   1                      SET_4A();
  188   1              else 
- 189   1                      CLR_2A();
+ 189   1                      CLR_4A();
  190   1              if(dat & (1 << S_B))
- 191   1                      SET_2B();
+ 191   1                      SET_4B();
  192   1              else 
- 193   1                      CLR_2B();
+ 193   1                      CLR_4B();
  194   1              if(dat & (1 << S_C))
- 195   1                      SET_2C();
+ 195   1                      SET_4C();
  196   1              else 
- 197   1                      CLR_2C();
+ 197   1                      CLR_4C();
  198   1              if(dat & (1 << S_D))
- 199   1                      SET_2D();
+ 199   1                      SET_4D();
  200   1              else 
- 201   1                      CLR_2D();
+ 201   1                      CLR_4D();
  202   1              if(dat & (1 << S_E))
- 203   1                      SET_2E();
+ 203   1                      SET_4E();
  204   1              else 
- 205   1                      CLR_2E();
+ 205   1                      CLR_4E();
  206   1              if(dat & (1 << S_F))
- 207   1                      SET_2F();
+ 207   1                      SET_4F();
  208   1              else 
- 209   1                      CLR_2F();
+ 209   1                      CLR_4F();
  210   1              if(dat & (1 << S_G))
- 211   1                      SET_2G();
+ 211   1                      SET_4G();
  212   1              else 
- 213   1                      CLR_2G();
+ 213   1                      CLR_4G();
  214   1      }
  215          
  216          /*******************************************************************************
@@ -246,7 +246,7 @@ line level    source
  229          *******************************************************************************/
  230          void LEDDisplayDrive(void)
  231          {
- 232   1              mP2=0xFF;
+ 232   1              mP2=0x00;
  233   1              mP3=0xFF;
  234   1              
  235   1              if(++PWMCycle >= MAX_PWM) //PWM周期循环
@@ -254,124 +254,127 @@ line level    source
  237   2                      PWMCycle=0;
  238   2                      if(++ScanCom >= 4)
  239   2                              ScanCom=0;
-C51 COMPILER V9.00   LED_DRIVE                                                             12/04/2018 17:50:11 PAGE 5   
+C51 COMPILER V9.00   LED_DRIVE                                                             12/06/2018 14:18:27 PAGE 5   
 
  240   2                      
  241   2              }
  242   1              if(PWMCycle >= gbDimmer)//如果大于设定的亮度值，就全灭，这样形成循环就是PWM
  243   1              {
- 244   2                      P2 = mP2 = 0xFF;
+ 244   2                      P2 = mP2 = 0x00;
  245   2                      P3 = mP3 = 0xFF;
- 246   2                      P3 = mP3 = 0xFF;
- 247   2              }
- 248   1              else if (ScanCom == 0)
- 249   1              {
- 250   2                      COM1(LED_ON);
- 251   2                      if(LED_Tmp1 & BIT0) //2A
- 252   2                              SEG1(LED_ON);
- 253   2                      if(LED_Tmp1 & BIT1) //2B
- 254   2                              SEG2(LED_ON);
- 255   2                      if(LED_Tmp1 & BIT2) //2C
- 256   2                              SEG3(LED_ON);
- 257   2                      if(LED_Tmp1 & BIT3) //2D
- 258   2                              SEG4(LED_ON);
- 259   2                      if(LED_Tmp1 & BIT4) //2E
- 260   2                              SEG5(LED_ON);
- 261   2                      if(LED_Tmp1 & BIT5) //2F
- 262   2                              SEG6(LED_ON);
- 263   2                      if(LED_Tmp1 & BIT6) //2G
- 264   2                              SEG7(LED_ON);
- 265   2              }
- 266   1              else if (ScanCom == 1)
- 267   1              {
- 268   2                      COM2(LED_ON);
- 269   2                      if(LED_Tmp2 & BIT0) //3A
- 270   2                              SEG1(LED_ON);
- 271   2                      if(LED_Tmp2 & BIT1) //3B
- 272   2                              SEG2(LED_ON);
- 273   2                      if(LED_Tmp2 & BIT2) //3C
- 274   2                              SEG3(LED_ON);
- 275   2                      if(LED_Tmp2 & BIT3) //3D
- 276   2                              SEG4(LED_ON);
- 277   2                      if(LED_Tmp2 & BIT4) //3E
- 278   2                              SEG5(LED_ON);
- 279   2                      if(LED_Tmp2 & BIT5) //3F
- 280   2                              SEG6(LED_ON);
- 281   2                      if(LED_Tmp2 & BIT6) //3G
- 282   2                              SEG7(LED_ON);
- 283   2              }
- 284   1              else if (ScanCom == 2)
- 285   1              {
- 286   2                      COM3(LED_ON);
- 287   2                      if(LED_Tmp3 & BIT0) //4A
- 288   2                              SEG1(LED_ON);
- 289   2                      if(LED_Tmp3 & BIT1) //4B
- 290   2                              SEG2(LED_ON);
- 291   2                      if(LED_Tmp3 & BIT2) //4C
- 292   2                              SEG3(LED_ON);
- 293   2                      if(LED_Tmp3 & BIT3) //4D
- 294   2                              SEG4(LED_ON);
- 295   2                      if(LED_Tmp3 & BIT4) //4E
- 296   2                              SEG5(LED_ON);
- 297   2                      if(LED_Tmp3 & BIT5) //4F
- 298   2                              SEG6(LED_ON);
- 299   2                      if(LED_Tmp3 & BIT6) //4G
- 300   2                              SEG7(LED_ON);
- 301   2              }
-C51 COMPILER V9.00   LED_DRIVE                                                             12/04/2018 17:50:11 PAGE 6   
+ 246   2              }
+ 247   1              else if (ScanCom == 0)
+ 248   1              {
+ 249   2                      COM4(LED_ON);
+ 250   2                      if(LED_Tmp4 & BIT0) //ALA
+ 251   2                              SEG1(LED_ON);
+ 252   2                      if(LED_Tmp4 & BIT1) //1B
+ 253   2                              SEG2(LED_ON);
+ 254   2                      if(LED_Tmp4 & BIT2) //1C
+ 255   2                              SEG3(LED_ON);
+ 256   2                      if(LED_Tmp4 & BIT3) //APM
+ 257   2                              SEG4(LED_ON);
+ 258   2                      if(LED_Tmp4 & BIT4) //CL1
+ 259   2                              SEG5(LED_ON);
+ 260   2                      if(LED_Tmp4 & BIT5) //CL
+ 261   2                              SEG6(LED_ON);
+ 262   2              }
+ 263   1              else if (ScanCom == 1)
+ 264   1              {
+ 265   2                      COM1(LED_ON);
+ 266   2                      if(LED_Tmp1 & BIT0) //2A
+ 267   2                              SEG1(LED_ON);
+ 268   2                      if(LED_Tmp1 & BIT1) //2B
+ 269   2                              SEG2(LED_ON);
+ 270   2                      if(LED_Tmp1 & BIT2) //2C
+ 271   2                              SEG3(LED_ON);
+ 272   2                      if(LED_Tmp1 & BIT3) //2D
+ 273   2                              SEG4(LED_ON);
+ 274   2                      if(LED_Tmp1 & BIT4) //2E
+ 275   2                              SEG5(LED_ON);
+ 276   2                      if(LED_Tmp1 & BIT5) //2F
+ 277   2                              SEG6(LED_ON);
+ 278   2                      if(LED_Tmp1 & BIT6) //2G
+ 279   2                              SEG7(LED_ON);
+ 280   2              }
+ 281   1              else if (ScanCom == 2)
+ 282   1              {
+ 283   2                      COM2(LED_ON);
+ 284   2                      if(LED_Tmp2 & BIT0) //3A
+ 285   2                              SEG1(LED_ON);
+ 286   2                      if(LED_Tmp2 & BIT1) //3B
+ 287   2                              SEG2(LED_ON);
+ 288   2                      if(LED_Tmp2 & BIT2) //3C
+ 289   2                              SEG3(LED_ON);
+ 290   2                      if(LED_Tmp2 & BIT3) //3D
+ 291   2                              SEG4(LED_ON);
+ 292   2                      if(LED_Tmp2 & BIT4) //3E
+ 293   2                              SEG5(LED_ON);
+ 294   2                      if(LED_Tmp2 & BIT5) //3F
+ 295   2                              SEG6(LED_ON);
+ 296   2                      if(LED_Tmp2 & BIT6) //3G
+ 297   2                              SEG7(LED_ON);
+ 298   2              }
+ 299   1              else if (ScanCom == 3)
+ 300   1              {
+ 301   2                      COM3(LED_ON);
+C51 COMPILER V9.00   LED_DRIVE                                                             12/06/2018 14:18:27 PAGE 6   
 
- 302   1              else if (ScanCom == 3)
- 303   1              {
- 304   2                      COM4(LED_ON);
- 305   2                      if(LED_Tmp4 & BIT0) //ALA
- 306   2                              SEG1(LED_ON);
- 307   2                      if(LED_Tmp4 & BIT1) //1B
- 308   2                              SEG2(LED_ON);
- 309   2                      if(LED_Tmp4 & BIT2) //1C
- 310   2                              SEG3(LED_ON);
- 311   2                      if(LED_Tmp4 & BIT3) //PM
- 312   2                              SEG4(LED_ON);
- 313   2                      if(LED_Tmp4 & BIT4) //CL1
- 314   2                              SEG5(LED_ON);
- 315   2                      if(LED_Tmp4 & BIT5) //CL
- 316   2                              SEG6(LED_ON);
- 317   2              }
- 318   1              P2 = mP2; //这里统一赋值，消除时间差
- 319   1              P3 = mP3; 
- 320   1              P3 = mP3;//测试用
- 321   1      }
- 322          
- 323          /*******************************************************************************
- 324          * 函数原型：
- 325          * 输入参数：
- 326          * 输出参数：
- 327          * 函数功能：
- 328          * 返回值说明：
- 329          * 创建日期：
- 330          * 创建人：
- 331          * 修改日期
- 332          * 修改人：
- 333          * 第N次修改：
- 334          * 修改原因：
- 335          * 备注：
- 336          *******************************************************************************/
- 337          void Display_LED(void)
- 338          {
- 339   1              
- 340   1      }
- 341          
- 342          
- 343          
+ 302   2                      if(LED_Tmp3 & BIT0) //4A
+ 303   2                              SEG1(LED_ON);
+ 304   2                      if(LED_Tmp3 & BIT1) //4B
+ 305   2                              SEG2(LED_ON);
+ 306   2                      if(LED_Tmp3 & BIT2) //4C
+ 307   2                              SEG3(LED_ON);
+ 308   2                      if(LED_Tmp3 & BIT3) //4D
+ 309   2                              SEG4(LED_ON);
+ 310   2                      if(LED_Tmp3 & BIT4) //4E
+ 311   2                              SEG5(LED_ON);
+ 312   2                      if(LED_Tmp3 & BIT5) //4F
+ 313   2                              SEG6(LED_ON);
+ 314   2                      if(LED_Tmp3 & BIT6) //4G
+ 315   2                              SEG7(LED_ON);
+ 316   2              }
+ 317   1              P2 = mP2; //这里统一赋值，消除时间差
+ 318   1              P3 = mP3; 
+ 319   1      //      P2 = 0;
+ 320   1      //      P3 = 0xFF;
+ 321   1      //      P2 = 0x10;
+ 322   1      //      P3 = 0x00;
+ 323   1      //      P3 = 0xFF;
+ 324   1      }
+ 325          
+ 326          /*******************************************************************************
+ 327          * 函数原型：
+ 328          * 输入参数：
+ 329          * 输出参数：
+ 330          * 函数功能：
+ 331          * 返回值说明：
+ 332          * 创建日期：
+ 333          * 创建人：
+ 334          * 修改日期
+ 335          * 修改人：
+ 336          * 第N次修改：
+ 337          * 修改原因：
+ 338          * 备注：
+ 339          *******************************************************************************/
+ 340          void Display_LED(void)
+ 341          {
+ 342   1              
+ 343   1      }
  344          
  345          
  346          
  347          
  348          
  349          
+ 350          
+ 351          
+ 352          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    835    ----
+   CODE SIZE        =    820    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
@@ -379,6 +382,8 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    IDATA SIZE       =     12    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
+
+C51 COMPILER V9.00   LED_DRIVE                                                             12/06/2018 14:18:27 PAGE 7   
 
 
 C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

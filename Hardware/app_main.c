@@ -1,3 +1,10 @@
+/*******************************************************************************
+*说明：LED控制说明：
+*	   "P2 = 0x02;P3 = 0x07;"：这是4个“七段数码管”第二个位的后四段亮，
+*	   "P2 = 0x02;P3 = ~0x07;"：这是4个“七段数码管”第二个位的前三段亮，
+*	   即是低电平导通，因为P2给高电平
+********************************************************************************/
+
 /*************************************************************/
 /*头文件Header File*******************************************/
 /*************************************************************/
@@ -27,7 +34,7 @@ bit    AppTick1ms;
 bit    Flag_12HourDisplay;
 bit    Flag_0_5s; //0.5s
 bit    Flag_LeapYear;//闰年标志，1为闰年，0为平年
-BOOL   gbPowerOn;//开关机状态，1为开机
+BOOL   Flag_PowerOn;//开关机状态，1为开机
 BOOL   gbDispleyFull;//显示满，1为满
 BOOL   SleepEnable;
 
@@ -51,12 +58,15 @@ uint8_t  idata gRTC_Month_bk;
 uint8_t  idata gRTC_Year;
 uint8_t  idata gRTC_Year_bk;
 uint8_t  idata gRTC_Zone;
+uint8_t  idata gRTC_Zone_bk;
 uint8_t  idata gRTC_Week; //一周7天
 uint8_t  idata cntNoFlash;
 uint8_t		   gbDimmer;//亮度
 uint8_t  idata cnt0_5s;//计数到500ms就反转Flag_0_5s
 
 uint8_t  idata sys_Volume;
+uint8_t  idata cntBeep;//闹钟响时并且为beep模式
+uint8_t  idata cntAlarmRuningMinuteOFF;//闹钟响多少分钟关闭
 
 
 /*************************************************************/
@@ -70,6 +80,29 @@ uint8_t  idata sys_Volume;
 /*************************************************************/
 /*函数定义Function Definition**********************************/
 /*************************************************************/
+/*******************************************************************************
+* 函数原型：
+* 输入参数：
+* 输出参数：
+* 函数功能：关闭闹铃打包多条语句
+* 返回值说明：
+* 创建日期：
+* 创建人：
+* 修改日期
+* 修改人：
+* 第N次修改：
+* 修改原因：
+* 备注：
+*******************************************************************************/
+void Alarm1PowerOFF(void)
+{
+	AL1_TD.OnOff_TD = ALARM_OFF;//闹钟开关，关
+	AL1_TD.RingRun_TD = ALARM_RING_RUN_OFF;//闹钟运行状态，关
+	AL1_TD.Snooze_TD=ALARM_SNOOZE_OFF;//闹钟贪睡模式，没有贪睡
+	BUZ_OnOff(0);
+	cntBeep=0;
+}
+
 /*******************************************************************************
 * 函数原型：
 * 输入参数：
@@ -92,6 +125,8 @@ void DisplayStatusExit(void)
 		{
 			cnt0_5s = 0;
 			Flag_0_5s = ~Flag_0_5s;
+			if(Flag_0_5s)  //每当Flag_0_5s为1，Flag_Year_0_5s_Disp就反转，这样就是1s反转一次
+				Flag_Year_0_5s_Disp=~Flag_Year_0_5s_Disp;
 		}
 		if (--cntDisplayStatus == 0)
 		{
@@ -144,6 +179,41 @@ void Compare_1MinutePorc(void)
 			gRTC_Minute_bk=gRTC_Minute;
 			
 			/*******************************************************************************
+			 *功能：闹钟开启并且hour和minute相等，闹钟响应
+			 *	因为是24小时的实际计时，所以不用判断上午下午
+			 *******************************************************************************/
+			if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.hour==gRTC_Hour) && (AL1_TD.minute==gRTC_Minute))
+			{
+				if(AL1_TD.RingRun_TD==ALARM_RING_RUN_OFF)//
+				{
+					AL1_TD.RingRun_TD=ALARM_RING_RUN_ON;//把闹钟运行状态设为ON
+				}
+			}
+			
+			/*******************************************************************************
+			 *功能：闹钟开启&&在运行&&贪睡时间和RTC时间相等&&贪睡模式开
+			 *
+			 *******************************************************************************/
+			if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON) && (AL1_TD.Snooze_TD == ALARM_SNOOZE_ON)
+			 && (AL1_TD.snoozeHour==gRTC_Hour) && (AL1_TD.snoozeMinute=gRTC_Minute))
+			{
+				AL1_TD.Snooze_TD = ALARM_SNOOZE_OFF;//再次开启贪睡
+			}
+			
+			/*******************************************************************************
+			 *功能：闹钟如果已经开启，并且在运行，计数30分钟关闭，无论是否是贪睡模式
+			 *
+			 *******************************************************************************/
+			if((AL1_TD.OnOff_TD == ALARM_ON) && (AL1_TD.RingRun_TD == ALARM_RING_RUN_ON))//闹钟已经开启，并且在运行,
+			{
+				cntAlarmRuningMinuteOFF++;
+				if(cntAlarmRuningMinuteOFF>=30)//30分钟到了
+				{
+					Alarm1PowerOFF();
+				}
+			}
+			
+			/*******************************************************************************
 			 *功能：
 			 *
 			 *这里是1hour进来一次
@@ -158,6 +228,29 @@ void Compare_1MinutePorc(void)
 					
 				}
 			}
+		}
+	}
+	
+	/*******************************************************************************
+	*功能：闹钟开启，并且已经响应
+	*这里是10ms进来一次
+	*******************************************************************************/
+	if((AL1_TD.OnOff_TD == ALARM_ON) && (AL1_TD.RingRun_TD == ALARM_RING_RUN_ON))//闹钟已经开启，并且在运行,
+	{
+		if(AL1_TD.Snooze_TD == ALARM_SNOOZE_OFF)//闹钟如果不在贪睡模式
+		{
+			cntBeep++;
+			if(cntBeep<40)
+				BUZ_OnOff(1);
+			else if((cntBeep>=40) && (cntBeep<80))
+				BUZ_OnOff(0);
+			else 
+				cntBeep=0;
+		}
+		else if(AL1_TD.Snooze_TD == ALARM_SNOOZE_ON)//闹钟如果在贪睡模式
+		{
+			cntBeep=0;
+			BUZ_OnOff(0);
 		}
 	}
 }
@@ -221,8 +314,8 @@ void Sys_Tick(void)
 void PowerON_Init(void)
 {
 	gRTC_Year=18;	//上电默认2018年
-	gRTC_Month=11;	//上电默认11月
-	gRTC_Day=0;		//上电默认为1号
+	gRTC_Month=12;	//上电默认12月
+	gRTC_Day=1;		//上电默认为1号
 	gRTC_Hour=0;	//上电默认为凌晨零点零分零秒
 	gRTC_Minute=0;	//上电默认为
 	gRTC_Sec=0;		//上电默认为
@@ -230,11 +323,16 @@ void PowerON_Init(void)
 	gRTC_Minute_bk=0;//上电默认为
 	gRTC_Sec_bk=0;	//上电默认为
 	Flag_LeapYear=0;//2018年不是闰年
+	Flag_12HourDisplay=1;//12小时制
 	
 	cntNoFlash = 0;
 	cnt0_5s=0;
-	gbPowerOn = 0;
-	gbDimmer=3;
+	Flag_PowerOn = 1;
+	gbDimmer=18;
+	
+//	AL1_TD.OnOff_TD = ALARM_ON;
+//	AL1_TD.hour=0;
+//	AL1_TD.minute=15;
 }
 
 /*******************************************************************************
@@ -254,11 +352,13 @@ void PowerON_Init(void)
 void app_main(void)
 {
 	PowerON_Init();
+	CheckDC();
 	while(1)
 	{
 		if(AppTick1ms)
 		{
 			AppTick1ms=0;
+			CheckDC();
 		}
 		if(AppTick0)
 		{
@@ -270,7 +370,7 @@ void app_main(void)
 		{
 			AppTick1=0;
 			AppTick2=0;
-			//BlueMode_Handle();
+			BlueMode_Handle();
 			
 		}
 		if(AppTick3)

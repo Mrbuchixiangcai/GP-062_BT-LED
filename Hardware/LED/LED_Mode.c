@@ -22,16 +22,15 @@ LED_BRIGHTNESS_E_TypeDef LED_Brightness_TD;//TD:TypeDef
 /*************************************************************/
 BOOL	gbUser_AdjClk;
 
-uint8_t bdata LCD_BitRam0;
-uint8_t bdata LCD_BitRam1;
-sbit gbLCD_Beep1    = LCD_BitRam0^0;
-sbit gbLCD_Dot      = LCD_BitRam0^1;
-sbit gbLCD_AM       = LCD_BitRam0^2;
-sbit gbLCD_PM       = LCD_BitRam0^3;
-sbit gbLCD_BT_LED   = LCD_BitRam0^4;
-sbit gbLCD_AL_LED   = LCD_BitRam0^5;
+bit 	Flag_Beep1;
+bit	 	Flag_Dot;
+bit 	Flag_APM;
+bit 	Flag_BT_LED;
+bit		Flag_AL_LED;
+bit		Flag_Year_0_5s_Disp;//在设置年的时候，20和18交替0.5秒显示
 
-uint8_t  Flag_DisplayStatus;//显示状态，显示某个状态时会被赋值
+uint8_t	Flag_DisplayStatus;//显示状态，显示某个状态时会被赋值
+
 
 /*************************************************************/
 /*变量定义Variable Definition**********************************/
@@ -112,11 +111,12 @@ code uint8_t DisplayCode[]=
 *******************************************************************************/
 void ClearDisplayBuff(void)
 {
-	uint8_t i;
-	for(i=0;i<5;i++)
-		displayBuff[i]=eD_NONE;
-	LCD_BitRam0=0;
-	LCD_BitRam1=0;
+	LED_Reg1=0;
+	LED_Reg2=0;
+	LED_Reg3=0;
+	LED_Reg4=0;
+	LED_Reg5=0;
+	LED_Reg6=0;
 }
 
 /*******************************************************************************
@@ -164,7 +164,7 @@ void DisplayNum34(uint8_t dat)
 * 函数原型：
 * 输入参数：
 * 输出参数：
-* 函数功能：显示OFF
+* 函数功能：关闭显示
 * 返回值说明：
 * 创建日期：
 * 创建人：
@@ -176,10 +176,10 @@ void DisplayNum34(uint8_t dat)
 *******************************************************************************/
 void Display_Off(void)
 {
-	DIG_NUM1=eD_NONE;
-	DIG_NUM2=eD_O;
-	DIG_NUM3=eD_F;
-	DIG_NUM4=eD_F;
+	DisplayNum12(0);
+	DisplayNum34(0);
+	P2=0x00;
+	P3=0xFF;
 }
 
 /*******************************************************************************
@@ -210,29 +210,116 @@ void Display_HH_MM(uint8_t hhmmType)
 			tmpMinute = gRTC_Minute;
 			break;
 		case eDS_AL1:  	//显示闹钟时间
-			tmpHour = gRTC_Hour;
-			tmpMinute = gRTC_Minute;
+			tmpHour = AL1_TD.hour;
+			tmpMinute = AL1_TD.minute;
 			break;
 		case ADJ_ALARM1://设置时显示闹钟时间
-			tmpHour = gRTC_Hour;
-			tmpMinute = gRTC_Minute;
+			tmpHour = AL1_TD.hour;
+			tmpMinute = AL1_TD.minute;
 			break;
 	}
 	if(Flag_12HourDisplay)
 	{
 		if(tmpHour<12)
 		{ 
-			gbLCD_AM=1;
+			Flag_APM=0;
 		}
 		else
 		{ 
-			gbLCD_PM=1;
+			Flag_APM=1;
 			tmpHour-=12;
 		}
 		if(tmpHour==0)
 			tmpHour=12;           
 	}
 	DisplayNum12(tmpHour);
+	DisplayNum34(tmpMinute);
+}
+
+/*******************************************************************************
+* 函数原型：
+* 输入参数：
+* 输出参数：
+* 函数功能：时间分割-小时
+* 返回值说明：
+* 创建日期：
+* 创建人：
+* 修改日期
+* 修改人：
+* 第N次修改：
+* 修改原因：
+* 备注：
+*******************************************************************************/
+void Display_HH(uint8_t hhmmType)
+{
+	uint8_t tmpHour;
+	switch(hhmmType)
+	{
+		case eDS_RTC:  	//显示RTC
+			tmpHour = gRTC_Hour;
+			break;
+		case ADJ_CLK:  	//设置RTC
+			tmpHour = gRTC_Hour;
+			break;
+		case eDS_AL1:  	//显示闹钟时间
+			tmpHour = gRTC_Hour;
+			break;
+		case ADJ_ALARM1://设置时显示闹钟时间
+			tmpHour = AL1_TD.hour;
+			break;
+	}
+	if(Flag_12HourDisplay)
+	{
+		if(tmpHour<12)
+		{ 
+			Flag_APM=0;
+		}
+		else
+		{ 
+			Flag_APM=1;
+			tmpHour-=12;
+		}
+		if(tmpHour==0)
+			tmpHour=12;           
+	}
+	DisplayNum12(tmpHour);
+}
+
+/*******************************************************************************
+* 函数原型：
+* 输入参数：
+* 输出参数：
+* 函数功能：时间分割-分钟
+* 返回值说明：
+* 创建日期：
+* 创建人：
+* 修改日期
+* 修改人：
+* 第N次修改：
+* 修改原因：
+* 备注：
+*******************************************************************************/
+void Display_MM(uint8_t hhmmType)
+{
+	uint8_t tmpMinute;
+	switch(hhmmType)
+	{
+		case eDS_RTC:  	//显示RTC
+			tmpMinute = gRTC_Minute;
+			break;
+		case ADJ_CLK:  	//设置RTC
+			tmpMinute = gRTC_Minute;
+			break;
+		case eDS_AL1:  	//显示闹钟时间
+			tmpMinute = gRTC_Minute;
+			break;
+		case ADJ_ALARM1://设置时显示闹钟时间
+			tmpMinute = AL1_TD.minute;
+			break;
+		case ADJ_SNOOZE_TIME: //设置贪睡时间
+			tmpMinute=AL1_TD.snoozeTime;
+			break;
+	}
 	DisplayNum34(tmpMinute);
 }
 
@@ -316,23 +403,20 @@ void Display_SetRTC(void)
 * 修改原因：
 * 备注：
 *******************************************************************************/
-uint8_t cntYearDisplay=0;
 void Display_SetRTCYear(void)
 {
 	if((Flag_0_5s)||(NoFlash()))
 	{
 		//0.5进来一次，20和18交替显示
-		if(cntYearDisplay==0)
+		if(Flag_Year_0_5s_Disp==0)
 		{
-			cntYearDisplay=1;
 			//DisplayNum12(20);
-			SET_4G();//显示一个"-"
+			SET_2G();//显示一个"-"
 			DisplayNum34(20);
 		}
 		else
 		{
-			cntYearDisplay=0;
-			SET_4G();//显示一个"-"
+			SET_2G();//显示一个"-"
 			DisplayNum34(gRTC_Year);
 		}
 		
@@ -353,13 +437,13 @@ void Display_SetRTCYear(void)
 * 修改原因：
 * 备注：
 *******************************************************************************/
-void Display_SetRTCDate(void)
+void Display_SetRTCMonth(void)
 {
 	if((Flag_0_5s)||(NoFlash()))
 	{
-		DisplayNum12(gRTC_Month);//不显示
-		DisplayNum34(gRTC_Day);
+		DisplayNum12(gRTC_Month);
 	}
+	DisplayNum34(gRTC_Day);
 }
 
 /*******************************************************************************
@@ -383,6 +467,7 @@ void Display_SetRTCDay(void)
 	{
 		DisplayNum34(gRTC_Day);
 	}
+	DisplayNum12(gRTC_Month);
 }
 
 
@@ -404,8 +489,11 @@ void Display_SetRTCHour(void)
 {
 	if((Flag_0_5s)||(NoFlash()))
 	{
-		DisplayNum12(ADJ_CLK);
+		//DisplayNum12(gRTC_Hour);
+		Display_HH_MM(ADJ_CLK);
 	}
+	//DisplayNum34(gRTC_Minute);
+	Display_MM(ADJ_CLK);
 }
 
 /*******************************************************************************
@@ -426,8 +514,10 @@ void Display_SetRTCMinute(void)
 {
 	if((Flag_0_5s)||(NoFlash()))
 	{
-		DisplayNum34(ADJ_CLK);
+		//DisplayNum34(gRTC_Minute);
+		Display_HH_MM(ADJ_CLK);
 	}
+	Display_HH(ADJ_CLK);//显示小时
 }
 
 /*******************************************************************************
@@ -470,7 +560,7 @@ void Display_SnoozeTime(void)
 {
 	if((Flag_0_5s)||(NoFlash()))
 	{
-		DisplayNum34(gRTC_Day);
+		Display_MM(ADJ_SNOOZE_TIME);
 	}
 }
 
@@ -528,7 +618,11 @@ void Display_SetAlarm1(void)
 *******************************************************************************/
 void Display_SetAlarm1_Hour(void)
 {
-	
+	if((Flag_0_5s)||(NoFlash()))
+	{
+		Display_HH_MM(ADJ_ALARM1);
+	}
+	Display_MM(ADJ_ALARM1);//显示分钟
 }
 
 /*******************************************************************************
@@ -547,7 +641,11 @@ void Display_SetAlarm1_Hour(void)
 *******************************************************************************/
 void Display_SetAlarm1_Min(void)
 {
-	
+	if((Flag_0_5s)||(NoFlash()))
+	{
+		Display_HH_MM(ADJ_ALARM1);
+	}
+	Display_HH(ADJ_ALARM1);//显示分钟
 }
 
 /*******************************************************************************
@@ -606,7 +704,7 @@ void SetDisplayState10s(uint8_t status)
 void SetDisplayState2s(uint8_t status)
 {
 	Flag_DisplayStatus=status;//把要显示的状态赋值给全局变量
-	cntNoFlash=cntDisplayStatus=cDISP_DELAY_15SEC;
+	cntDisplayStatus=cDISP_DELAY_5SEC;
 }
 
 /*******************************************************************************
@@ -634,8 +732,10 @@ void UpdateDisplay(void)
 			Display_SetRTCYear();
 			break;
 		case ADJ_MONTH:				 //设置RTC的日期
+			Display_SetRTCMonth();
+			break;
 		case ADJ_DAY:				 //设置RTC的日期
-			Display_SetRTCDate();
+			Display_SetRTCDay();
 			break;
 		case ADJ_HOUR:				 //设置RTC小时的显示
 			Display_SetRTCHour();
@@ -658,7 +758,7 @@ void UpdateDisplay(void)
 		case ADJ_ALARM1_HOUR:		 //设置闹钟小时的显示
 			Display_SetAlarm1_Hour();
 			break; 
-		case ADJ_ALARM1_MIN:		 //设置闹钟分钟的显示
+		case ADJ_ALARM1_MINUTE:		 //设置闹钟分钟的显示
 			Display_SetAlarm1_Min(); 
 			break; 
 		case POWER_OFF_DISP:		 //关闭显示
@@ -688,7 +788,37 @@ void UpdateDisplay(void)
 *******************************************************************************/
 void Display_Flag(void)
 {
-	
+	if(Flag_PowerOn)//开机进入
+	{
+		if(Flag_APM==0)
+		{
+			CLR_APM();//这里是上午不亮，下午亮
+		}
+		else
+		{
+			SET_APM();
+		}
+		
+		if(AL1_TD.OnOff_TD==ALARM_ON)
+		{
+			SET_ALA();//如果开蓝牙就亮闹钟标志
+		}
+		else if(AL1_TD.OnOff_TD==ALARM_OFF)
+		{
+			CLR_ALA();
+		}
+		
+		if(Flag_Dot==1)
+		{
+			SET_DOT1();//在main中的INT_WT()设立标志，
+			SET_DOT2();
+		}
+		else
+		{
+			CLR_DOT1();
+			CLR_DOT2();
+		}
+	}
 }
 
 /*******************************************************************************

@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED</IncludePath>
+              <IncludePath>..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED;..\Hardware\SystemSleep</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -415,6 +415,11 @@
               <FileName>LED_Mode.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Hardware\LED\LED_Mode.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys_sleep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Hardware\SystemSleep\sys_sleep.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,11 +1,11 @@
-C51 COMPILER V9.00   BT_MODE                                                               12/04/2018 17:30:26 PAGE 1   
+C51 COMPILER V9.00   BT_MODE                                                               12/06/2018 14:18:26 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE BT_MODE
 OBJECT MODULE PLACED IN ..\Object\BT_Mode.obj
 COMPILER INVOKED BY: D:\ProgramFiles\Keil_v5\C51\BIN\C51.EXE ..\Hardware\BT\BT_Mode.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..
-                    -\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED) DEBUG OBJECTEXTEND PRINT(.\Listings\BT_Mode.lst) OBJEC
-                    -T(..\Object\BT_Mode.obj)
+                    -\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED;..\Hardware\SystemSleep) DEBUG OBJECTEXTEND PRINT(.\Lis
+                    -tings\BT_Mode.lst) OBJECT(..\Object\BT_Mode.obj)
 
 line level    source
 
@@ -54,179 +54,215 @@ line level    source
   43          uint8_t  idata uart1_ReceiveBuffer_A[UART1_LEN_BUFFER];
   44          uint8_t  idata uart1_ReceiveBuffer_B[UART1_LEN_BUFFER];
   45          
-  46          /*************************************************************/
-  47          /*函数声明Function Declaration********************************/
-  48          /*************************************************************/
-  49          
-  50          /*************************************************************/
-  51          /*函数定义Function Definition*********************************/
-  52          /*************************************************************/
-  53          /*******************************************************************************
-C51 COMPILER V9.00   BT_MODE                                                               12/04/2018 17:30:26 PAGE 2   
+  46          char code BT_Command_Tab[][4]=
+  47          {
+  48                  {0x00,0x00,0x00,0x00},
+  49                  {0xAA,0x00,0x05,0x55},
+  50                  {0xAA,0x00,0x06,0x55},
+  51          };
+  52          
+  53          /*************************************************************/
+C51 COMPILER V9.00   BT_MODE                                                               12/06/2018 14:18:26 PAGE 2   
 
-  54           * 函数原型：
-  55           * 输入参数：
-  56           * 输出参数：
-  57           * 函数功能：串口发送字符
-  58           * 返回值说明：
-  59           * 创建日期：
-  60           * 创建人：
-  61           * 修改日期
-  62           * 修改人：
-  63           * 第N次修改：
-  64           * 修改原因：
-  65           * 备注：
-  66           *******************************************************************************/
-  67          void Uart1Transmit_SendString(char *str)
-  68          {
-  69   1              uint8_t  i;
-  70   1              while(uart1_EnableSend);
-  71   1              for(i=0;i<UART1_LEN_BUFFER;i++)
-  72   1              {
-  73   2                      uart1_TransmitBuffer[i]=0;
-  74   2              }
-  75   1              //for(i=0;*str != '\0';i++)
-  76   1              for(i=0;i<Uart_Len;i++)
-  77   1              {
-  78   2                      uart1_TransmitBuffer[i]=*str;
-  79   2                      str++;
-  80   2              }
-  81   1              uart1_TX_Pointer=0;
-  82   1              uart1_EnableSend=1;
-  83   1              UARTDR=uart1_TransmitBuffer[uart1_TX_Pointer++];
-  84   1      }
-  85          
-  86          /*******************************************************************************
-  87          * 函数原型：
-  88          * 输入参数：
-  89          * 输出参数：
-  90          * 函数功能：发送命令，通过传进来的数据判断选择哪个命令发送
-  91          * 返回值说明：
-  92          * 创建日期：
-  93          * 创建人：
-  94          * 修改日期
-  95          * 修改人：
-  96          * 第N次修改：
-  97          * 修改原因：
-  98          * 备注：
-  99          *******************************************************************************/
- 100          void BT_Send_CMD(uint8_t cmd)
- 101          {
- 102   1              //uint8_t  code bt_VOL_Send_Tab[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
- 103   1              if(cmd<BT_PLAY)
- 104   1              {
- 105   2                      
- 106   2              }
- 107   1              else
- 108   1              {
- 109   2                      
- 110   2              }
- 111   1      }
- 112          
- 113          /*******************************************************************************
- 114          * 函数原型：
- 115          * 输入参数：
-C51 COMPILER V9.00   BT_MODE                                                               12/04/2018 17:30:26 PAGE 3   
+  54          /*函数声明Function Declaration********************************/
+  55          /*************************************************************/
+  56          
+  57          /*************************************************************/
+  58          /*函数定义Function Definition*********************************/
+  59          /*************************************************************/
+  60          /*******************************************************************************
+  61           * 函数原型：
+  62           * 输入参数：
+  63           * 输出参数：
+  64           * 函数功能：串口发送字符
+  65           * 返回值说明：
+  66           * 创建日期：
+  67           * 创建人：
+  68           * 修改日期
+  69           * 修改人：
+  70           * 第N次修改：
+  71           * 修改原因：
+  72           * 备注：
+  73           *******************************************************************************/
+  74          void Uart1Transmit_SendString(char *str)
+  75          {
+  76   1              uint8_t  i;
+  77   1              while(uart1_EnableSend);
+  78   1              for(i=0;i<UART1_LEN_BUFFER;i++)
+  79   1              {
+  80   2                      uart1_TransmitBuffer[i]=0;
+  81   2              }
+  82   1              //for(i=0;*str != '\0';i++)
+  83   1              for(i=0;i<Uart_Len;i++)
+  84   1              {
+  85   2                      uart1_TransmitBuffer[i]=*str;
+  86   2                      str++;
+  87   2              }
+  88   1              uart1_TX_Pointer=0;
+  89   1              uart1_EnableSend=1;
+  90   1              UARTDR=uart1_TransmitBuffer[uart1_TX_Pointer++];
+  91   1      }
+  92          
+  93          /*******************************************************************************
+  94           * 函数原型：
+  95           * 输入参数：
+  96           * 输出参数：
+  97           * 函数功能：串口发送字符
+  98           * 返回值说明：
+  99           * 创建日期：
+ 100           * 创建人：
+ 101           * 修改日期
+ 102           * 修改人：
+ 103           * 第N次修改：
+ 104           * 修改原因：
+ 105           * 备注：
+ 106           *******************************************************************************/
+ 107          void Uart1Transmit_SendHex(char *str)
+ 108          {
+ 109   1              uint8_t  i;
+ 110   1              while(uart1_EnableSend);
+ 111   1              for(i=0;i<UART1_LEN_BUFFER;i++)
+ 112   1              {
+ 113   2                      uart1_TransmitBuffer[i]=0;
+ 114   2              }
+ 115   1              for(i=0;i<4;i++)
+C51 COMPILER V9.00   BT_MODE                                                               12/06/2018 14:18:26 PAGE 3   
 
- 116          * 输出参数：
- 117          * 函数功能：
- 118          * 返回值说明：
- 119          * 创建日期：
- 120          * 创建人：
- 121          * 修改日期
- 122          * 修改人：
- 123          * 第N次修改：
- 124          * 修改原因：
- 125          * 备注：
- 126          *******************************************************************************/
- 127          void BlueMode_Receive(void)
- 128          {
- 129   1              uint8_t  i;
- 130   1              char *BT_CMD;
- 131   1              if((Flag_UART1_RX_Finish_A) || (Flag_UART1_RX_Finish_B))
- 132   1              {
- 133   2                      if(Flag_UART1_RX_Finish_A)
- 134   2                      {
- 135   3                              Flag_UART1_RX_Finish_A=0;
- 136   3                              BT_CMD=uart1_ReceiveBuffer_A;
- 137   3                      }
- 138   2                      else 
- 139   2                      {
- 140   3                              Flag_UART1_RX_Finish_B=0;
- 141   3                              BT_CMD=uart1_ReceiveBuffer_B;
- 142   3                      }
- 143   2                      if((BT_CMD[0] == 'B') && (BT_CMD[1] == 'T'))
- 144   2                      {
- 145   3                              
- 146   3                              
- 147   3                      }
- 148   2                      if((BT_CMD[0] == 'S') && (BT_CMD[1] == 'D'))
- 149   2                      {
- 150   3                              
- 151   3                      }
- 152   2                      if((BT_CMD[0] == 'A') && (BT_CMD[1] == 'X'))
- 153   2                      {
- 154   3                              
- 155   3                      }
- 156   2                      if((BT_CMD[0] == 'C') && (BT_CMD[1] == 'O') && (BT_CMD[2] == 'M'))
- 157   2                      {
- 158   3                              
- 159   3                      }
- 160   2                      
- 161   2                      for(i=0;i<UART1_LEN_BUFFER;i++)
- 162   2                              BT_CMD[i]=0;
- 163   2              }
- 164   1      }
- 165          
- 166          
- 167          
- 168          
- 169          /*******************************************************************************
- 170          * 函数原型：
- 171          * 输入参数：
- 172          * 输出参数：
- 173          * 函数功能：
- 174          * 返回值说明：
- 175          * 创建日期：
- 176          * 创建人：
- 177          * 修改日期
-C51 COMPILER V9.00   BT_MODE                                                               12/04/2018 17:30:26 PAGE 4   
+ 116   1              {
+ 117   2                      uart1_TransmitBuffer[i]=*str;
+ 118   2                      str++;
+ 119   2              }
+ 120   1              uart1_TX_Pointer=0;
+ 121   1              uart1_EnableSend=1;
+ 122   1              UARTDR=uart1_TransmitBuffer[uart1_TX_Pointer++];
+ 123   1      }
+ 124          
+ 125          /*******************************************************************************
+ 126          * 函数原型：
+ 127          * 输入参数：
+ 128          * 输出参数：
+ 129          * 函数功能：发送命令，通过传进来的数据判断选择哪个命令发送
+ 130          * 返回值说明：
+ 131          * 创建日期：
+ 132          * 创建人：
+ 133          * 修改日期
+ 134          * 修改人：
+ 135          * 第N次修改：
+ 136          * 修改原因：
+ 137          * 备注：
+ 138          *******************************************************************************/
+ 139          void BT_Send_CMD(uint8_t cmd)
+ 140          {
+ 141   1              //uint8_t  code bt_VOL_Send_Tab[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+ 142   1              if(cmd<=BT_VOLDEC)
+ 143   1              {
+ 144   2                      Uart1Transmit_SendHex(&BT_Command_Tab[cmd][0]);
+ 145   2              }
+ 146   1      }
+ 147          
+ 148          /*******************************************************************************
+ 149          * 函数原型：
+ 150          * 输入参数：
+ 151          * 输出参数：
+ 152          * 函数功能：
+ 153          * 返回值说明：
+ 154          * 创建日期：
+ 155          * 创建人：
+ 156          * 修改日期
+ 157          * 修改人：
+ 158          * 第N次修改：
+ 159          * 修改原因：
+ 160          * 备注：
+ 161          *******************************************************************************/
+ 162          uint8_t  idata BT_CMDBuffer[UART1_LEN_BUFFER];
+ 163          void BlueMode_Receive(void)
+ 164          {
+ 165   1              uint8_t  i;
+ 166   1              //char *BT_CMD;
+ 167   1              if((Flag_UART1_RX_Finish_A) || (Flag_UART1_RX_Finish_B))
+ 168   1              {
+ 169   2                      if(Flag_UART1_RX_Finish_A)
+ 170   2                      {
+ 171   3                              Flag_UART1_RX_Finish_A=0;
+ 172   3                              for(i=0;i<UART1_LEN_BUFFER;i++)
+ 173   3                                      BT_CMDBuffer[i]=uart1_ReceiveBuffer_A[i];
+ 174   3                      }
+ 175   2                      else 
+ 176   2                      {
+ 177   3                              Flag_UART1_RX_Finish_B=0;
+C51 COMPILER V9.00   BT_MODE                                                               12/06/2018 14:18:26 PAGE 4   
 
- 178          * 修改人：
- 179          * 第N次修改：
- 180          * 修改原因：
- 181          * 备注：
- 182          *******************************************************************************/
- 183          void BlueMode_Handle(void) //接收到的数据信息/状态进行处理
- 184          {
- 185   1              BlueMode_Receive();
- 186   1                      if (sys_Volume != bt_Volume)//这里有问题，会一直复位蓝牙，现写显示，回来再改
- 187   1                      {
- 188   2                              bt_Volume = sys_Volume;
- 189   2                              BT_Send_CMD(BT_VOL); //串口发送音量信息到蓝牙端
- 190   2                      }
- 191   1      
- 192   1      }
- 193          
- 194          
- 195          
- 196          
+ 178   3                              for(i=0;i<UART1_LEN_BUFFER;i++)
+ 179   3                                      BT_CMDBuffer[i]=uart1_ReceiveBuffer_B[i];
+ 180   3                      }
+ 181   2                      if((BT_CMDBuffer[0]==0xAA) && (BT_CMDBuffer[1]==0x20))//20是蓝牙到mcu
+ 182   2                      {
+ 183   3                              if(BT_CMDBuffer[2]==0x03)
+ 184   3                              {
+ 185   4                                      Flag_BT_Connect=1;//连接成功
+ 186   4                              }
+ 187   3                              if(BT_CMDBuffer[2]==0x01)
+ 188   3                              {
+ 189   4                                      Flag_BT_Connect=0;//断开连接，此时蓝牙处于配对模式
+ 190   4                              }
+ 191   3                      }
+ 192   2                      
+ 193   2                      for(i=0;i<UART1_LEN_BUFFER;i++)
+ 194   2                              BT_CMDBuffer[i]=0;
+ 195   2              }
+ 196   1      }
  197          
  198          
  199          
  200          
- 201          
- 202          
- 203          
+ 201          /*******************************************************************************
+ 202          * 函数原型：
+ 203          * 输入参数：
+ 204          * 输出参数：
+ 205          * 函数功能：
+ 206          * 返回值说明：
+ 207          * 创建日期：
+ 208          * 创建人：
+ 209          * 修改日期
+ 210          * 修改人：
+ 211          * 第N次修改：
+ 212          * 修改原因：
+ 213          * 备注：
+ 214          *******************************************************************************/
+ 215          void BlueMode_Handle(void) //接收到的数据信息/状态进行处理
+ 216          {
+ 217   1              BlueMode_Receive();
+ 218   1              if(Flag_BT_Connect)//如果连接成功
+ 219   1              {
+ 220   2                      if (bt_cmd)
+ 221   2                      {
+ 222   3                              BT_Send_CMD(bt_cmd);
+ 223   3                              bt_cmd = BT_NONE;  //清零
+ 224   3                      }
+ 225   2              }
+ 226   1      }
+ 227          
+ 228          
+ 229          
+ 230          
+ 231          
+ 232          
+ 233          
+ 234          
+ 235          
+ 236          
+ 237          
 
+
+C51 COMPILER V9.00   BT_MODE                                                               12/06/2018 14:18:26 PAGE 5   
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    142    ----
-   CONSTANT SIZE    =   ----    ----
+   CODE SIZE        =    251    ----
+   CONSTANT SIZE    =     12    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     10       4
-   IDATA SIZE       =     25    ----
+   DATA SIZE        =     10    ----
+   IDATA SIZE       =     33    ----
    BIT SIZE         =      6    ----
 END OF MODULE INFORMATION.
 

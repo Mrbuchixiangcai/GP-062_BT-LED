@@ -11,6 +11,15 @@
 #ifndef		_MC96F6508A_
 #define		_MC96F6508A_
 
+#define   Bit0      0
+#define   Bit1      1
+#define   Bit2      2
+#define   Bit3      3
+#define   Bit4      4
+#define   Bit5      5
+#define   Bit6      6
+#define   Bit7      7
+
 sfr			P0			= 0x80;			// P0 Data Register
 	sbit	P00			= 0x80;
 	sbit	P01			= 0x81;
@@ -122,6 +131,15 @@ sfr			P6FSR		= 0xF4;			//Port Function Selection Register 6
 // System Oscillator, Reset Control
 sfr			SCCR		= 0x8A;			// System Clock Control Register
 sfr			OSCCR		= 0xD9;			// Oscillator Control Register
+	#define IRCS__500K   (0x00<<3)
+	#define IRCS__1MHZ   (0x01<<3)
+	#define IRCS__2MHZ   (0x02<<3)
+	#define IRCS__4MHZ   (0x03<<3)
+	#define IRCS__8MHZ   (0x04<<3)
+	#define IRCS_16MHZ   (0x05<<3)
+	#define IRC_EN       (0<<Bit2)
+	#define IRC_DIS      (1<<Bit2)
+	#define SCLKE         Bit0
 sfr			BITCR		= 0x8B;			// BIT Clock Control Register
 sfr			BITCNT		= 0x8C;			// Basic Interval Timer Counter Register
 sfr			RSTFR		= 0x86;			// Reset Flag Register

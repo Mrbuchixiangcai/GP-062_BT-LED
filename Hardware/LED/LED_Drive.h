@@ -11,9 +11,9 @@
 /*************************************************************/
 /*宏定义Macro Definition**************************************/
 /*************************************************************/
-#define LED_ON   0
-#define LED_OFF  1
-#define MAX_PWM  5
+#define LED_ON   1
+#define LED_OFF  0
+#define MAX_PWM  18
 
 #define BIT0   0x01  
 #define BIT1   0x02
@@ -33,6 +33,13 @@
 #define CBIT7  0x7F
 
 /*端口组定义*/
+/*******************************************************************************
+*说明：COM1:P21(0x02),COM2:P22(0x04),COM3:P23(0x08),COM4:P24(0x10),
+*	   COM4:对应四个"七段数码管"的第一位
+*	   COM1:对应四个"七段数码管"的第二位
+*	   COM2:对应四个"七段数码管"的第三位
+*	   COM3:对应四个"七段数码管"的第四位
+********************************************************************************/
 #define COM1(a) if(a)							\
 					do{mP2 |=  BIT1;}while(0);	\
 				else							\ 
@@ -50,33 +57,33 @@
 				else							\ 
 					do{mP2 &= CBIT4;}while(0)
 #define SEG1(a) if(a)							\
-					do{mP3 |=  BIT0;}while(0);	\
+					do{mP3 &= CBIT0;}while(0);	\
 				else							\ 
-					do{mP3 &= CBIT0;}while(0)
+					do{mP3 |=  BIT0;}while(0)
 #define SEG2(a) if(a)							\
-					do{mP3 |=  BIT1;}while(0);	\
+					do{mP3 &= CBIT1;}while(0);	\
 				else							\ 
-					do{mP3 &= CBIT1;}while(0)
+					do{mP3 |=  BIT1;}while(0)
 #define SEG3(a) if(a)							\
-					do{mP3 |=  BIT2;}while(0);	\
+					do{mP3 &= CBIT2;}while(0);	\
 				else							\ 
-					do{mP3 &= CBIT2;}while(0)
+					do{mP3 |=  BIT2;}while(0)
 #define SEG4(a) if(a)							\
-					do{mP3 |=  BIT3;}while(0);	\
+					do{mP3 &= CBIT3;}while(0);	\
 				else							\ 
-					do{mP3 &= CBIT3;}while(0)
+					do{mP3 |=  BIT3;}while(0)
 #define SEG5(a) if(a)							\
-					do{mP3 |=  BIT4;}while(0);	\
+					do{mP3 &= CBIT4;}while(0);	\
 				else							\ 
-					do{mP3 &= CBIT4;}while(0)
+					do{mP3 |=  BIT4;}while(0)
 #define SEG6(a) if(a)							\
-					do{mP3 |=  BIT5;}while(0);	\
+					do{mP3 &= CBIT5;}while(0);	\
 				else							\ 
-					do{mP3 &= CBIT5;}while(0)
+					do{mP3 |=  BIT5;}while(0)
 #define SEG7(a) if(a)							\
-					do{mP3 |=  BIT6;}while(0);	\
+					do{mP3 &= CBIT6;}while(0);	\
 				else							\ 
-					do{mP3 &= CBIT6;}while(0)
+					do{mP3 |=  BIT6;}while(0)
 
 /*SET具体功能定义*/
 //SET4个"七段数码管"最左第一位
@@ -112,47 +119,47 @@
 
 //SET标志LED显示
 #define SET_ALA()    do{LED_Reg4 |=  BIT0;}while(0)
-#define SET_PM()     do{LED_Reg4 |=  BIT3;}while(0)
+#define SET_APM()    do{LED_Reg4 |=  BIT3;}while(0)
 #define SET_DOT1()   do{LED_Reg4 |=  BIT5;}while(0)
 #define SET_DOT2()   do{LED_Reg4 |=  BIT4;}while(0)
 
 /*CLR具体功能定义*/
 //CLR4个"七段数码管"最左第一位
-#define CLR_1B()     do{LED_Reg4 |= CBIT1;}while(0)
-#define CLR_1C()     do{LED_Reg4 |= CBIT2;}while(0)
+#define CLR_1B()     do{LED_Reg4 &= CBIT1;}while(0)
+#define CLR_1C()     do{LED_Reg4 &= CBIT2;}while(0)
 
 //CLR4个"七段数码管"第二位
-#define CLR_2A()     do{LED_Reg1 |= CBIT0;}while(0)
-#define CLR_2B()     do{LED_Reg1 |= CBIT1;}while(0)
-#define CLR_2C()     do{LED_Reg1 |= CBIT2;}while(0)
-#define CLR_2D()     do{LED_Reg1 |= CBIT3;}while(0)
-#define CLR_2E()     do{LED_Reg1 |= CBIT4;}while(0)
-#define CLR_2F()     do{LED_Reg1 |= CBIT5;}while(0)
-#define CLR_2G()     do{LED_Reg1 |= CBIT6;}while(0)
+#define CLR_2A()     do{LED_Reg1 &= CBIT0;}while(0)
+#define CLR_2B()     do{LED_Reg1 &= CBIT1;}while(0)
+#define CLR_2C()     do{LED_Reg1 &= CBIT2;}while(0)
+#define CLR_2D()     do{LED_Reg1 &= CBIT3;}while(0)
+#define CLR_2E()     do{LED_Reg1 &= CBIT4;}while(0)
+#define CLR_2F()     do{LED_Reg1 &= CBIT5;}while(0)
+#define CLR_2G()     do{LED_Reg1 &= CBIT6;}while(0)
 
 //CLR4个"七段数码管"第三位
-#define CLR_3A()     do{LED_Reg2 |= CBIT0;}while(0)
-#define CLR_3B()     do{LED_Reg2 |= CBIT1;}while(0)
-#define CLR_3C()     do{LED_Reg2 |= CBIT2;}while(0)
-#define CLR_3D()     do{LED_Reg2 |= CBIT3;}while(0)
-#define CLR_3E()     do{LED_Reg2 |= CBIT4;}while(0)
-#define CLR_3F()     do{LED_Reg2 |= CBIT5;}while(0)
-#define CLR_3G()     do{LED_Reg2 |= CBIT6;}while(0)
+#define CLR_3A()     do{LED_Reg2 &= CBIT0;}while(0)
+#define CLR_3B()     do{LED_Reg2 &= CBIT1;}while(0)
+#define CLR_3C()     do{LED_Reg2 &= CBIT2;}while(0)
+#define CLR_3D()     do{LED_Reg2 &= CBIT3;}while(0)
+#define CLR_3E()     do{LED_Reg2 &= CBIT4;}while(0)
+#define CLR_3F()     do{LED_Reg2 &= CBIT5;}while(0)
+#define CLR_3G()     do{LED_Reg2 &= CBIT6;}while(0)
 
 //CLR4个"七段数码管"第二四位
-#define CLR_4A()     do{LED_Reg3 |= CBIT0;}while(0)
-#define CLR_4B()     do{LED_Reg3 |= CBIT1;}while(0)
-#define CLR_4C()     do{LED_Reg3 |= CBIT2;}while(0)
-#define CLR_4D()     do{LED_Reg3 |= CBIT3;}while(0)
-#define CLR_4E()     do{LED_Reg3 |= CBIT4;}while(0)
-#define CLR_4F()     do{LED_Reg3 |= CBIT5;}while(0)
-#define CLR_4G()     do{LED_Reg3 |= CBIT6;}while(0)
+#define CLR_4A()     do{LED_Reg3 &= CBIT0;}while(0)
+#define CLR_4B()     do{LED_Reg3 &= CBIT1;}while(0)
+#define CLR_4C()     do{LED_Reg3 &= CBIT2;}while(0)
+#define CLR_4D()     do{LED_Reg3 &= CBIT3;}while(0)
+#define CLR_4E()     do{LED_Reg3 &= CBIT4;}while(0)
+#define CLR_4F()     do{LED_Reg3 &= CBIT5;}while(0)
+#define CLR_4G()     do{LED_Reg3 &= CBIT6;}while(0)
 
 //CLR标志LED显示
-#define CLR_ALA()    do{LED_Reg4 |= CBIT0;}while(0)
-#define CLR_PM()     do{LED_Reg4 |= CBIT3;}while(0)
-#define CLR_DOT1()   do{LED_Reg4 |= CBIT5;}while(0)
-#define CLR_DOT2()   do{LED_Reg4 |= CBIT4;}while(0)
+#define CLR_ALA()    do{LED_Reg4 &= CBIT0;}while(0)
+#define CLR_APM()    do{LED_Reg4 &= CBIT3;}while(0)
+#define CLR_DOT1()   do{LED_Reg4 &= CBIT5;}while(0)
+#define CLR_DOT2()   do{LED_Reg4 &= CBIT4;}while(0)
 					
 /*************************************************************/
 /*类型定义Byte Definition**************************************/

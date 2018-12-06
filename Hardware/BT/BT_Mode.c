@@ -43,6 +43,13 @@ uint8_t  uart1_TransmitBuffer[UART1_LEN_BUFFER];
 uint8_t  idata uart1_ReceiveBuffer_A[UART1_LEN_BUFFER];
 uint8_t  idata uart1_ReceiveBuffer_B[UART1_LEN_BUFFER];
 
+char code BT_Command_Tab[][4]=
+{
+	{0x00,0x00,0x00,0x00},
+	{0xAA,0x00,0x05,0x55},
+	{0xAA,0x00,0x06,0x55},
+};
+
 /*************************************************************/
 /*函数声明Function Declaration********************************/
 /*************************************************************/
@@ -84,6 +91,38 @@ void Uart1Transmit_SendString(char *str)
 }
 
 /*******************************************************************************
+ * 函数原型：
+ * 输入参数：
+ * 输出参数：
+ * 函数功能：串口发送字符
+ * 返回值说明：
+ * 创建日期：
+ * 创建人：
+ * 修改日期
+ * 修改人：
+ * 第N次修改：
+ * 修改原因：
+ * 备注：
+ *******************************************************************************/
+void Uart1Transmit_SendHex(char *str)
+{
+	uint8_t  i;
+	while(uart1_EnableSend);
+	for(i=0;i<UART1_LEN_BUFFER;i++)
+	{
+		uart1_TransmitBuffer[i]=0;
+	}
+	for(i=0;i<4;i++)
+	{
+		uart1_TransmitBuffer[i]=*str;
+		str++;
+	}
+	uart1_TX_Pointer=0;
+	uart1_EnableSend=1;
+	UARTDR=uart1_TransmitBuffer[uart1_TX_Pointer++];
+}
+
+/*******************************************************************************
 * 函数原型：
 * 输入参数：
 * 输出参数：
@@ -100,13 +139,9 @@ void Uart1Transmit_SendString(char *str)
 void BT_Send_CMD(uint8_t cmd)
 {
 	//uint8_t  code bt_VOL_Send_Tab[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-	if(cmd<BT_PLAY)
+	if(cmd<=BT_VOLDEC)
 	{
-		
-	}
-	else
-	{
-		
+		Uart1Transmit_SendHex(&BT_Command_Tab[cmd][0]);
 	}
 }
 
@@ -124,42 +159,39 @@ void BT_Send_CMD(uint8_t cmd)
 * 修改原因：
 * 备注：
 *******************************************************************************/
+uint8_t  idata BT_CMDBuffer[UART1_LEN_BUFFER];
 void BlueMode_Receive(void)
 {
 	uint8_t  i;
-	char *BT_CMD;
+	//char *BT_CMD;
 	if((Flag_UART1_RX_Finish_A) || (Flag_UART1_RX_Finish_B))
 	{
 		if(Flag_UART1_RX_Finish_A)
 		{
 			Flag_UART1_RX_Finish_A=0;
-			BT_CMD=uart1_ReceiveBuffer_A;
+			for(i=0;i<UART1_LEN_BUFFER;i++)
+				BT_CMDBuffer[i]=uart1_ReceiveBuffer_A[i];
 		}
 		else 
 		{
 			Flag_UART1_RX_Finish_B=0;
-			BT_CMD=uart1_ReceiveBuffer_B;
+			for(i=0;i<UART1_LEN_BUFFER;i++)
+				BT_CMDBuffer[i]=uart1_ReceiveBuffer_B[i];
 		}
-		if((BT_CMD[0] == 'B') && (BT_CMD[1] == 'T'))
+		if((BT_CMDBuffer[0]==0xAA) && (BT_CMDBuffer[1]==0x20))//20是蓝牙到mcu
 		{
-			
-			
-		}
-		if((BT_CMD[0] == 'S') && (BT_CMD[1] == 'D'))
-		{
-			
-		}
-		if((BT_CMD[0] == 'A') && (BT_CMD[1] == 'X'))
-		{
-			
-		}
-		if((BT_CMD[0] == 'C') && (BT_CMD[1] == 'O') && (BT_CMD[2] == 'M'))
-		{
-			
+			if(BT_CMDBuffer[2]==0x03)
+			{
+				Flag_BT_Connect=1;//连接成功
+			}
+			if(BT_CMDBuffer[2]==0x01)
+			{
+				Flag_BT_Connect=0;//断开连接，此时蓝牙处于配对模式
+			}
 		}
 		
 		for(i=0;i<UART1_LEN_BUFFER;i++)
-			BT_CMD[i]=0;
+			BT_CMDBuffer[i]=0;
 	}
 }
 
@@ -183,12 +215,14 @@ void BlueMode_Receive(void)
 void BlueMode_Handle(void) //接收到的数据信息/状态进行处理
 {
 	BlueMode_Receive();
-		if (sys_Volume != bt_Volume)//这里有问题，会一直复位蓝牙，现写显示，回来再改
+	if(Flag_BT_Connect)//如果连接成功
+	{
+		if (bt_cmd)
 		{
-			bt_Volume = sys_Volume;
-			BT_Send_CMD(BT_VOL); //串口发送音量信息到蓝牙端
+			BT_Send_CMD(bt_cmd);
+			bt_cmd = BT_NONE;  //清零
 		}
-
+	}
 }
 
 

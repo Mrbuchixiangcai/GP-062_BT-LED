@@ -12,6 +12,15 @@
 /*************************************************************/
 /*宏定义Macro Definition**************************************/
 /*************************************************************/
+//四个"七段数码管"
+//  aaaaa        AAAAA        AAAAA        AAAAA         
+// f     B      F     B      F     B      F     B        
+// f     B      F     B      F     B      F     B        
+//  ggggg        GGGGG        GGGGG        GGGGG         
+// e     C      E     C      E     C      E     C        
+// e     C      E     C      E     C      E     C        
+//  ddddd        DDDDD        DDDDD        DDDDD         
+//   bit1         bit2         bit3         bit4
 #define S_NC  7
 #define S_A   0		//  AAAAA
 #define S_B   1		// F     B
@@ -171,8 +180,8 @@ enum
 	ADJ_ALARM2,
 	ALARM1_DISP,
 	ALARM2_DISP,
-	ADJ_ALARM1_MIN,
-	ADJ_ALARM2_MIN,
+	ADJ_ALARM1_MINUTE,
+	ADJ_ALARM2_MINUTE,
 	ADJ_ALARM1_HOUR,
 	ADJ_ALARM2_HOUR,
 	ADJ_ALARM1_MODE,
@@ -218,6 +227,7 @@ extern uint16_t cntDisplayStatus;
 void SetDisplayState10s(uint8_t status);
 void SetDisplayState2s(uint8_t status);
 void Display(void);
+void Display_Off(void);
 
 /*************************************************************/
 /*函数定义Function Definition**********************************/
@@ -235,6 +245,12 @@ void Display(void);
 /*外部调用_标志位定义Flags Definition***************************/
 /*************************************************************/
 extern uint8_t  Flag_DisplayStatus;
+extern bit 		Flag_Beep1;
+extern bit	 	Flag_Dot;
+extern bit 		Flag_APM;
+extern bit 		Flag_BT_LED;
+extern bit		Flag_AL_LED;
+extern bit		Flag_Year_0_5s_Disp;
 /*************************************************************/
 /*外部调用_变量定义Variable Definition*************************/
 /*************************************************************/
