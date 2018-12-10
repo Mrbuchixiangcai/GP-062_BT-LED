@@ -91,10 +91,13 @@ void INT_Timer3() interrupt 16
 {
 	// Timer3 interrupt
 	// TODO: add your code here
-	if(++cnt200us>=4)
+	if(Flag_PowerOn==1)
 	{
-		cnt200us=0;
-		LEDDisplayDrive();
+		if(++cnt200us>=4)
+		{
+			cnt200us=0;
+			LEDDisplayDrive();
+		}
 	}
 }
 
@@ -105,19 +108,158 @@ void INT_WT() interrupt 20
 	gRTC_HalfSecond=(!gRTC_HalfSecond);
 	if(gRTC_HalfSecond)
 	{
+		/*******************************************************************************
+		*功能：每60秒增加1分钟，
+		*
+		********************************************************************************/
 		if(++gRTC_Sec>59)
 		{
 			gRTC_Sec=0;
+			
+			/*******************************************************************************
+			*功能：每60分钟增加一个小时
+			*
+			********************************************************************************/
 			if(++gRTC_Minute>59)
 			{
 				gRTC_Minute=0;
+				
+				/*******************************************************************************
+				*功能：每24小时就增加一天,
+				*
+				********************************************************************************/
 				if(++gRTC_Hour>23)
 				{
 					gRTC_Hour=0;
-					gRTC_Week<<=1;
-					if(gRTC_Week==0x80)//如果移位之后等于0x80，说明是第8次移位，这时候就是
-						gRTC_Week=0x01;//周一，所以赋值为0x01。
+					
+					/*******************************************************************************
+					*功能：7天循环
+					*
+					********************************************************************************/
+					if(++gRTC_Week>7)
+					{
+						gRTC_Week=1;
+						
+						if(gRTC_Month==3) //3月
+						{
+							if((gRTC_Week==7) && (Flag_ZoneStart==0))//第一周的周日
+							{
+								Flag_ZoneStart=1;
+							}
+							
+							if((gRTC_Week==1) && (Flag_ZoneStart==1))//第二周的周一
+							{
+								Flag_ZoneStart=2;
+							}
+							
+							if((gRTC_Week==7) && (Flag_ZoneStart==2)) //第二周的周日
+							{
+								Flag_ZoneStart=0;
+								
+								gRTC_Hour = gRTC_Hour+1;
+							}
+						}
+						else if(gRTC_Month==11)
+						{
+							if((gRTC_Week==7) && (Flag_ZoneStop==0))//第一周的周日
+							{
+								Flag_ZoneStop=1;
+								gRTC_Hour = 23;//小时向前调一个小时
+								
+								if(gRTC_Day>1)
+								{
+									gRTC_Day  = gRTC_Day-1;
+								}
+								else if(gRTC_Day==1)
+								{
+									if(gRTC_Month==2)
+									{
+										if((gRTC_Year % 4) ==0)//闰年
+										{
+											gRTC_Day=29;
+										}
+										else//平年
+										{
+											gRTC_Day=28;
+										}
+									}
+									else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+									{
+										gRTC_Day=30;
+									}
+									else
+									{
+										gRTC_Day=31;
+									}
+								}
+							}
+						}
+					}
+					
+					
+					/*******************************************************************************
+					*功能：天数增加，但是判断闰年，根据闰年定义天数
+					*
+					********************************************************************************/
+					gRTC_Day++;
+					if(gRTC_Month==2)
+					{
+						if((gRTC_Year % 4) ==0)//闰年
+						{
+							if(gRTC_Day>29)
+							{	
+								gRTC_Day=1;
+								Flag_DayFull_Add1Month=1;
+							}
+						}
+						else//平年
+						{
+							if(gRTC_Day>28)
+							{	
+								gRTC_Day=1;
+								Flag_DayFull_Add1Month=1;
+							}
+						}
+					}
+					else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+					{
+						if(gRTC_Day>30)
+						{	
+							gRTC_Day=1;
+							Flag_DayFull_Add1Month=1;
+						}
+					}
+					else
+					{
+						if(gRTC_Day>31)
+						{	
+							gRTC_Day=1;
+							Flag_DayFull_Add1Month=1;
+						}
+					}
+					
+					/*******************************************************************************
+					*功能：每个月的N天过完就增加一个月
+					*
+					********************************************************************************/
+					if(Flag_DayFull_Add1Month==1)
+					{
+						Flag_DayFull_Add1Month=0;
+						
+						if(++gRTC_Month>12)
+						{
+							gRTC_Month=1;
+							
+							/*******************************************************************************
+							*功能：每年的12月过完就增加一年
+							*
+							********************************************************************************/
+							gRTC_Year++;//可以不再判断年的最大值，因为用户没法加快时间，这个最大可以2099年
+						}
+					}
+					
 				}
+//				if(gRTC_Month==
 			}
 		}
 //		if(++gRTC_Minute>59)//这里把分钟提到和秒一样的等级，是测试用，可以缩短测试时间时的时间
@@ -264,14 +406,16 @@ void port_init()
 	P0   = 0x00;    	// port initial value
 
 	P1IO = 0xF0;    	// direction
-	P1PU = 0x0F;    	// pullup
+	P1PU = 0x4F;    	// pullup
+//	P1IO = 0xF0;    	// direction
+//	P1PU = 0x0F;    	// pullup
 	P1OD = 0x00;    	// open drain
 	P1DB = 0x00;    	// P17~10 debounce
 	P1   = 0x00;    	// port initial value
 
 	P2IO = 0xFE;    	// direction
 	P2PU = 0x00;    	// pullup
-	P2OD = 0x00;    	// open drain
+	P2OD = 0x01;    	// open drain,P20输入开喽
 	P2   = 0x00;    	// port initial value
 
 	P3IO = 0xFF;    	// direction

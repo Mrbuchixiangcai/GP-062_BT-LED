@@ -19,6 +19,7 @@
 /*************************************************************/
 TIME_TEMP_ST_TypeDef  Time_Temp_TD;
 ALRAM_ST_TypeDef  AL1_TD;//闹钟相关
+UCT_TIME_E_TypeDef UCT_TD;//时区
 
 /*************************************************************/
 /*标志位定义Flags Definition***********************************/
@@ -38,6 +39,12 @@ BOOL   Flag_PowerOn;//开关机状态，1为开机
 BOOL   gbDispleyFull;//显示满，1为满
 BOOL   SleepEnable;
 
+uint8_t idata Flag_DayFull_Add1Month;//每个月过完就加1月值，
+uint8_t idata Flag_MonthFull_Add1Year;//每年过完就加1年值，
+
+uint8_t idata Flag_ZoneStart;
+uint8_t idata Flag_ZoneStop;
+
 /*************************************************************/
 /*变量定义Variable Definition**********************************/
 /*************************************************************/
@@ -46,7 +53,7 @@ uint8_t  idata cntAppTick;
 BOOL		   gRTC_HalfSecond;
 uint8_t  idata gRTC_Sec;//RTC数据 
 uint8_t  idata gRTC_Sec_bk;
-uint8_t  idata gRTC_Minute;
+char     idata gRTC_Minute;
 uint8_t  idata gRTC_Minute_bk;
 uint8_t  idata gRTC_Hour;
 uint8_t  idata gRTC_Hour_bk;
@@ -99,6 +106,7 @@ void Alarm1PowerOFF(void)
 	AL1_TD.OnOff_TD = ALARM_OFF;//闹钟开关，关
 	AL1_TD.RingRun_TD = ALARM_RING_RUN_OFF;//闹钟运行状态，关
 	AL1_TD.Snooze_TD=ALARM_SNOOZE_OFF;//闹钟贪睡模式，没有贪睡
+	_BEEP_MUTE(0);
 	BUZ_OnOff(0);
 	cntBeep=0;
 }
@@ -187,6 +195,10 @@ void Compare_1MinutePorc(void)
 				if(AL1_TD.RingRun_TD==ALARM_RING_RUN_OFF)//
 				{
 					AL1_TD.RingRun_TD=ALARM_RING_RUN_ON;//把闹钟运行状态设为ON
+					if(Flag_BT_Play_Payse==1)
+					{
+						bt_cmd=BT_PLAY_PAUSE;
+					}
 				}
 			}
 			
@@ -195,7 +207,7 @@ void Compare_1MinutePorc(void)
 			 *
 			 *******************************************************************************/
 			if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON) && (AL1_TD.Snooze_TD == ALARM_SNOOZE_ON)
-			 && (AL1_TD.snoozeHour==gRTC_Hour) && (AL1_TD.snoozeMinute=gRTC_Minute))
+			 && (AL1_TD.snoozeRTCHour==gRTC_Hour) && (AL1_TD.snoozeRTCMinute==gRTC_Minute))
 			{
 				AL1_TD.Snooze_TD = ALARM_SNOOZE_OFF;//再次开启贪睡
 			}
@@ -231,14 +243,12 @@ void Compare_1MinutePorc(void)
 		}
 	}
 	
-	/*******************************************************************************
-	*功能：闹钟开启，并且已经响应
-	*这里是10ms进来一次
-	*******************************************************************************/
 	if((AL1_TD.OnOff_TD == ALARM_ON) && (AL1_TD.RingRun_TD == ALARM_RING_RUN_ON))//闹钟已经开启，并且在运行,
 	{
 		if(AL1_TD.Snooze_TD == ALARM_SNOOZE_OFF)//闹钟如果不在贪睡模式
 		{
+			_BEEP_MUTE(1);//解mute
+			P1 |= 0x40;
 			cntBeep++;
 			if(cntBeep<40)
 				BUZ_OnOff(1);
@@ -250,9 +260,37 @@ void Compare_1MinutePorc(void)
 		else if(AL1_TD.Snooze_TD == ALARM_SNOOZE_ON)//闹钟如果在贪睡模式
 		{
 			cntBeep=0;
+			_BEEP_MUTE(0);//因为是闹钟开启并且在运行状态，所以不会影响其他时间的蓝牙播放
 			BUZ_OnOff(0);
 		}
 	}
+	
+	/*******************************************************************************
+	*功能：gRTC_Zone1-7,选择对应的时区
+	*
+	********************************************************************************/
+	if(gRTC_Zone==1)
+		UCT_TD=UTC_SUB_10;
+	else if(gRTC_Zone==2)
+		UCT_TD=UTC_SUB_9;
+	else if(gRTC_Zone==3)
+		UCT_TD=UTC_SUB_8;
+	else if(gRTC_Zone==4)
+		UCT_TD=UTC_SUB_7;
+	else if(gRTC_Zone==5)
+		UCT_TD=UTC_SUB_6;
+	else if(gRTC_Zone==6)
+		UCT_TD=UTC_SUB_5;
+	else if(gRTC_Zone==7)
+		UCT_TD=UTC_SUB_4;
+}
+/*******************************************************************************
+*功能：闹钟开启，并且已经响应
+*这里是10ms进来一次
+*******************************************************************************/
+void AlarmRunning(void)
+{
+	
 }
 
 /*******************************************************************************
@@ -313,26 +351,33 @@ void Sys_Tick(void)
 *******************************************************************************/
 void PowerON_Init(void)
 {
-	gRTC_Year=18;	//上电默认2018年
-	gRTC_Month=12;	//上电默认12月
-	gRTC_Day=1;		//上电默认为1号
-	gRTC_Hour=0;	//上电默认为凌晨零点零分零秒
-	gRTC_Minute=0;	//上电默认为
-	gRTC_Sec=0;		//上电默认为
-	gRTC_Hour_bk=0;	//上电默认为凌晨零点零分零秒
-	gRTC_Minute_bk=0;//上电默认为
-	gRTC_Sec_bk=0;	//上电默认为
-	Flag_LeapYear=0;//2018年不是闰年
+	gRTC_Year=18;	  //上电默认2018年
+	gRTC_Month=12;	  //上电默认12月
+	gRTC_Day=1;		  //上电默认为1号
+	gRTC_Week=6;	  //12月号是周六
+	gRTC_Hour=0;	  //上电默认为凌晨零点零分零秒
+	gRTC_Minute=0;	  //上电默认为
+	gRTC_Sec=0;		  //上电默认为
+	gRTC_Hour_bk=0;	  //上电默认为凌晨零点零分零秒
+	gRTC_Minute_bk=0; //上电默认为
+	gRTC_Sec_bk=0;	  //上电默认为
+	Flag_LeapYear=0;  //2018年不是闰年
 	Flag_12HourDisplay=1;//12小时制
+	gRTC_Zone=6;	  //所在时区，初始化为华盛顿特区时间,西五区
+	UCT_TD=UTC_SUB_5; //所在时区，初始化为华盛顿特区时间,西五区
 	
 	cntNoFlash = 0;
 	cnt0_5s=0;
 	Flag_PowerOn = 1;
 	gbDimmer=18;
+	AL1_TD.snoozeTime=10;//默认为10分钟
+
 	
+//	gRTC_Hour=23;
+//	gRTC_Minute=39;
 //	AL1_TD.OnOff_TD = ALARM_ON;
 //	AL1_TD.hour=0;
-//	AL1_TD.minute=15;
+//	AL1_TD.minute=10;
 }
 
 /*******************************************************************************
@@ -377,6 +422,8 @@ void app_main(void)
 		{
 			AppTick3=0;
 			Display();
+			//AlarmRunning();
+			//P1 |= 0x40;
 		}
 		if(AppTick4)
 		{

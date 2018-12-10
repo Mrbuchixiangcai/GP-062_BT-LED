@@ -100,7 +100,7 @@ void InitT0_Sleep(void)
 	LVRCR = 0x01;  // 进 IDLE/STOP 不打开低压复位，低压复位关闭 0x01
 	IE2 &= ~0x12;  // 关闭定时器 T0和T3 中断
 	T0CR &= ~0x80; // 关闭 T0 定时器
-	T3CR &= ~0x80; // 关闭 T0 定时器
+	T3CR &= ~0x80; // 关闭 T8 定时器
 	SetGPIO_Sleep();  // 配置省电模式 IO 口
 }
 
@@ -161,13 +161,16 @@ void IN_IDLE_Delay(void)
 *******************************************************************************/
 void System_init(void)
 {
-	cli();          	// disable INT. during peripheral setting
 	port_init();    	// initialize ports
 	clock_init();   	// initialize operation clock
 	BUZ_init();     	// initialize Buzzer
 	LCD_init();     	// initialize LCD
 	Timer0_init();  	// initialize Timer0
 	Timer3_init();  	// initialize Timer3
+	UART_init();    	// initialize UART interface
+	WT_init();      	// initialize Watch timer
+	Flag_PowerOn = 1;
+	Flag_12HourDisplay=1;//12小时制
 	sei();          	// enable INT.
 }
 
@@ -200,6 +203,8 @@ void CheckDC(void)
 		cntCheckDC_IDLE=12;
 		DataBackups();
 		Flag_PowerOn=0;
+		Flag_DisplayStatus = 0;
+		cntDisplayStatus = 0;
 		InitT0_Sleep();
 		CLKToCRYL();
 		while(1)
@@ -207,23 +212,23 @@ void CheckDC(void)
 			PCON=0x01;  //进入IDLE省点模式
 			IN_IDLE_Delay();//进入IDLE专用的3个NOP延时
 			cntIDLE=0;
-			while((!CHECK_DC_DEC()))
+			while((CHECK_DC_DEC()))
 			{
 				for(i=0;i<16;i++)
 						;
 				if(++cntIDLE>=4)//延时确定是否上电
 					break;
 			}
-			if(cntIDLE>=4)
+			if(cntIDLE>=4)//延时确定是否上电
 				break;
-			System_init();//重新上DC初始化
-			gRTC_Hour   = gRTC_Hour_bk;
-			gRTC_Minute = gRTC_Minute_bk;
-			gRTC_Day    = gRTC_Day_bk;
-			gRTC_Month  = gRTC_Month_bk;
-			gRTC_Year   = gRTC_Year_bk;
-			gRTC_Zone   = gRTC_Zone_bk;
 		}
+		System_init();//重新上DC初始化
+		gRTC_Hour   = gRTC_Hour_bk;
+		gRTC_Minute = gRTC_Minute_bk;
+		gRTC_Day    = gRTC_Day_bk;
+		gRTC_Month  = gRTC_Month_bk;
+		gRTC_Year   = gRTC_Year_bk;
+		gRTC_Zone   = gRTC_Zone_bk;
 	}
 }
 

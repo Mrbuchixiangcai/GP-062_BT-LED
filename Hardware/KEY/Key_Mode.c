@@ -233,8 +233,8 @@ void KeyComMsg(void)
 						}
 						case ADJ_MONTH://设置月份
 						{
-							if(--gRTC_Month<1)
-								gRTC_Month=12;
+							if(++gRTC_Month>12)
+								gRTC_Month=1;
 							cntDisplayStatus=cDISP_DELAY_5SEC;
 							break;
 						}
@@ -299,7 +299,7 @@ void KeyComMsg(void)
 						}
 						case ADJ_DAYLIGHT_SAVING_ZONES://设置夏令时区
 						{
-							if(++gRTC_Zone>8)
+							if(++gRTC_Zone>7)
 								gRTC_Zone=1;
 							cntDisplayStatus=cDISP_DELAY_5SEC;
 							break;
@@ -416,7 +416,7 @@ void KeyComMsg(void)
 						case ADJ_DAYLIGHT_SAVING_ZONES:  //夏令时区选择
 						{
 							if(--gRTC_Zone<1)
-								gRTC_Zone=8;
+								gRTC_Zone=7;
 							cntDisplayStatus=cDISP_DELAY_5SEC;
 							break;
 						}
@@ -449,8 +449,40 @@ void KeyComMsg(void)
 				if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON))//闹钟开启，并且在运行
 				{
 					AL1_TD.Snooze_TD=ALARM_SNOOZE_ON;//开启贪睡
-					AL1_TD.snoozeHour=gRTC_Hour;//按下贪睡按键把当前的RTC时间赋值给贪睡计时，贪睡时间到时再响闹
-					AL1_TD.snoozeMinute=gRTC_Minute;
+					
+					/*******************************************************************************
+					*功能：gRTC_Minute小于50时，最大为49，如果贪睡时间为10，AL1_TD.snoozeMinute+gRTC_Minute
+					*	为59，没有产生进位，
+					*	
+					*	如果大于等于50,根据AL1_TD.snoozeMinute的1~10分钟可能会进位
+					********************************************************************************/
+					if(gRTC_Minute<50)
+					{
+						AL1_TD.snoozeRTCHour=gRTC_Hour;
+						AL1_TD.snoozeRTCMinute=gRTC_Minute+AL1_TD.snoozeTime;
+					}
+					else if(gRTC_Minute>=50)
+					{
+						/*******************************************************************************
+						*功能：如果gRTC_Minute+AL1_TD.snoozeMinute为60，说明产生了进位，贪睡时间到了的分
+						*	钟为(gRTC_Minute+AL1_TD.snoozeMinute)-60，小时在gRTC_Hour上加1，如果加了1等
+						*	于24，那就是凌晨零点，把AL1_TD.snoozeRTCHour=0
+						*
+						*
+						********************************************************************************/
+						if((gRTC_Minute+AL1_TD.snoozeTime)>=60)
+						{
+							AL1_TD.snoozeRTCMinute=(gRTC_Minute+AL1_TD.snoozeTime)-60;
+							AL1_TD.snoozeRTCHour=gRTC_Hour+1;
+							if(AL1_TD.snoozeRTCHour>23)
+								AL1_TD.snoozeRTCHour=0;
+						}
+						else if((gRTC_Minute+AL1_TD.snoozeTime)<60)
+						{
+							AL1_TD.snoozeRTCHour=gRTC_Hour;
+							AL1_TD.snoozeRTCMinute=gRTC_Minute+AL1_TD.snoozeTime;
+						}
+					}
 					break;
 				}
 				else if(Flag_DisplayStatus==0)
@@ -466,7 +498,7 @@ void KeyComMsg(void)
 			}
 			case KH(K_SNOOZE_DIMMER):
 			{
-				
+				bt_cmd=BT_PLAY_PAUSE;
 				break;
 			}
 			case KU(K_ALARM): 
@@ -505,7 +537,7 @@ void KeyComMsg(void)
 				}
 				
 				/*设置闹钟*/
-				if(AL1_TD.OnOff_TD==ALARM_ON)
+				if((AL1_TD.OnOff_TD==ALARM_ON) && (Flag_DisplayStatus==0))
 				{
 					//如果闹钟在打开状态，但是还没有响闹，短按ALARM就关闭
 					Alarm1PowerOFF();
@@ -515,7 +547,7 @@ void KeyComMsg(void)
 					//如果闹钟在运行，那短按ALARM键关闭闹钟
 					Alarm1PowerOFF();
 				}
-				else if(Flag_DisplayStatus==0)
+				else if((Flag_DisplayStatus==0) && (AL1_TD.OnOff_TD==ALARM_OFF))
 				{
 					SetDisplayState2s(ADJ_ALARM1_HOUR);//设置闹钟小时
 					AL1_TD.OnOff_TD=ALARM_ON;//开闹钟

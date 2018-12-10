@@ -20,10 +20,43 @@ typedef unsigned long  int  uint32_t;
 #include "key_mode.h"
 #include "led_mode.h"
 #include "led_drive.h"
+#include "sys_sleep.h"
 
 /*************************************************************/
 /*宏定义Macro Definition**************************************/
 /*************************************************************/
+//#define UTC_GMT_0   0   //世界协调时间_格林威治标准时间
+//#define UTC_ADD_1  +1   //东一区 加一个小时
+//#define UTC_ADD_2  +2
+//#define UTC_ADD_3  +3
+//#define UTC_ADD_4  +4
+//#define UTC_ADD_5  +5
+//#define UTC_ADD_6  +6
+//#define UTC_ADD_7  +7
+//#define UTC_ADD_8  +8
+//#define UTC_ADD_9  +9
+//#define UTC_ADD_10 +10
+//#define UTC_ADD_11 +11
+//#define UTC_ADD_12 +12
+//#define UTC_SUB_1  -1   //西一区，减一个小时
+//#define UTC_SUB_2  -2
+//#define UTC_SUB_3  -3
+//#define UTC_SUB_4  -4
+//#define UTC_SUB_5  -5
+//#define UTC_SUB_6  -6
+//#define UTC_SUB_7  -7
+//#define UTC_SUB_8  -8
+//#define UTC_SUB_9  -9
+//#define UTC_SUB_10 -10
+//#define UTC_SUB_11 -11
+//#define UTC_SUB_12 -12
+
+//闹钟响闹时给控制喇叭的mute脚一个高电平，解mute
+#define _BEEP_MUTE(a) if(a)							\
+					      do{P1 |=  0x40;}while(0);	\
+					  else							\ 
+						  do{P1 &= ~0x40;}while(0) 
+#define BT_PLAY_DEC() (P1&0x80)
 
 /*************************************************************/
 /*类型定义Byte Definition**************************************/
@@ -73,16 +106,47 @@ typedef struct
 {
 	ALARM_ONOFF_E_TypeDef		OnOff_TD;//闹钟总开关
 	uint8_t						week;
-	uint8_t						hour;  //判断此变量的值，通过LED显示出来，也可以直接对此变量进行设置
-	uint8_t						minute;
+	char						hour;  //判断此变量的值，通过LED显示出来，也可以直接对此变量进行设置
+	char						minute;
 	uint8_t						snoozeHour;  //按下贪睡时间后吧当前RTC时间赋给此变量，然后等待贪睡时间到了再次响闹
 	uint8_t						snoozeMinute;//
+	uint8_t						snoozeRTCHour;  //把设置的贪睡时间snoozeHour加上gRTC_Hour才是贪睡后要再次响的时间
+	uint8_t						snoozeRTCMinute;//
 	ALARM_RING_RUN_E_TypeDef	RingRun_TD;
 	ALARM_RING_TIMER_E_TypeDef 	RingTimer_TD;//闹钟响闹时间为60分钟
 	ALARM_WORK_MODE_E_TypeDef 	WorkMode_TD;
 	ALARM_SNOOZE_E_TypeDef 		Snooze_TD;
 	uint8_t 					snoozeTime;//贪睡时间
 }ALRAM_ST_TypeDef;//ST:struct
+
+typedef enum
+{
+	UTC_GMT_0 =0,
+	UTC_ADD_1   ,
+	UTC_ADD_2   ,
+	UTC_ADD_3   ,
+	UTC_ADD_4   ,
+	UTC_ADD_5   ,
+	UTC_ADD_6   ,
+	UTC_ADD_7   ,
+	UTC_ADD_8   ,
+	UTC_ADD_9   ,
+	UTC_ADD_10  ,
+	UTC_ADD_11  ,
+	UTC_ADD_12  ,
+	UTC_SUB_1   ,
+	UTC_SUB_2   ,
+	UTC_SUB_3   ,
+	UTC_SUB_4   ,
+	UTC_SUB_5   ,
+	UTC_SUB_6   ,
+	UTC_SUB_7   ,
+	UTC_SUB_8   ,
+	UTC_SUB_9   ,
+	UTC_SUB_10  ,
+	UTC_SUB_11  ,
+	UTC_SUB_12  ,
+}UCT_TIME_E_TypeDef;
 
 /*************************************************************/
 /*标志位定义Flags Definition***********************************/
@@ -115,14 +179,21 @@ void Alarm1PowerOFF(void);
 /*外部调用_类型定义Byte Definition*****************************/
 /*************************************************************/
 extern ALRAM_ST_TypeDef  AL1_TD;//闹钟相关
+extern UCT_TIME_E_TypeDef UCT_TD;
 
 /*************************************************************/
 /*外部调用_标志位定义Flags Definition***************************/
 /*************************************************************/
-extern bit    Flag_12HourDisplay;
-extern bit    Flag_0_5s;
-extern bit    Flag_LeapYear;
-extern bit    Flag_PowerOn;
+extern bit   Flag_12HourDisplay;
+extern bit   Flag_0_5s;
+extern bit   Flag_LeapYear;
+extern bit   Flag_PowerOn;
+
+extern uint8_t idata Flag_DayFull_Add1Month;
+extern uint8_t idata Flag_MonthFull_Add1Year;
+extern uint8_t idata Flag_ZoneStart;
+extern uint8_t idata Flag_ZoneStop;
+
 /*************************************************************/
 /*外部调用_变量定义Variable Definition*************************/
 /*************************************************************/
@@ -130,7 +201,7 @@ extern uint8_t  idata cntAppTick;
 extern BOOL		   gRTC_HalfSecond;
 extern uint8_t  idata gRTC_Sec;//RTC数据 
 extern uint8_t  idata gRTC_Sec_bk;
-extern uint8_t  idata gRTC_Minute;
+extern char     idata gRTC_Minute;
 extern uint8_t  idata gRTC_Minute_bk;
 extern uint8_t  idata gRTC_Hour;
 extern uint8_t  idata gRTC_Hour_bk;

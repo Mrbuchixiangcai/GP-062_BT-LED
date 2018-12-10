@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 1   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE KEY_MODE
@@ -62,7 +62,7 @@ line level    source
   51          * 修改日期
   52          * 修改人：
   53          * 第N次修改：
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 2   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 2   
 
   54          * 修改原因：
   55          * 备注：
@@ -126,7 +126,7 @@ line level    source
  112   4                                              KeyValue |= K_D;
  113   4                                              cntKeyLoop=cKEY_HOLD;
  114   4                                              break;
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 3   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 3   
 
  115   4                                      case 1:
  116   4                                              KeyEvent=2;
@@ -190,7 +190,7 @@ line level    source
  174          
  175          /*******************************************************************************
  176          * 函数原型：
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 4   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 4   
 
  177          * 输入参数：
  178          * 输出参数：
@@ -251,10 +251,10 @@ line level    source
  233   7                                                      }
  234   6                                                      case ADJ_MONTH://设置月份
  235   6                                                      {
- 236   7                                                              if(--gRTC_Month<1)
- 237   7                                                                      gRTC_Month=12;
+ 236   7                                                              if(++gRTC_Month>12)
+ 237   7                                                                      gRTC_Month=1;
  238   7                                                              cntDisplayStatus=cDISP_DELAY_5SEC;
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 5   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 5   
 
  239   7                                                              break;
  240   7                                                      }
@@ -318,10 +318,10 @@ line level    source
  298   7                                                              break;
  299   7                                                      }
  300   6                                                      case ADJ_DAYLIGHT_SAVING_ZONES://设置夏令时区
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 6   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 6   
 
  301   6                                                      {
- 302   7                                                              if(++gRTC_Zone>8)
+ 302   7                                                              if(++gRTC_Zone>7)
  303   7                                                                      gRTC_Zone=1;
  304   7                                                              cntDisplayStatus=cDISP_DELAY_5SEC;
  305   7                                                              break;
@@ -382,7 +382,7 @@ line level    source
  359   7                                                      }
  360   6                                                      case ADJ_MONTH://设置月份
  361   6                                                      {
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 7   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 7   
 
  362   7                                                              if(--gRTC_Month<1)
  363   7                                                                      gRTC_Month=12;
@@ -441,12 +441,12 @@ line level    source
  416   6                                                      case ADJ_DAYLIGHT_SAVING_ZONES:  //夏令时区选择
  417   6                                                      {
  418   7                                                              if(--gRTC_Zone<1)
- 419   7                                                                      gRTC_Zone=8;
+ 419   7                                                                      gRTC_Zone=7;
  420   7                                                              cntDisplayStatus=cDISP_DELAY_5SEC;
  421   7                                                              break;
  422   7                                                      }
  423   6                                                      case ADJ_SNOOZE_TIME://设置贪睡时间
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 8   
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 8   
 
  424   6                                                      {
  425   7                                                              if(--AL1_TD.snoozeTime<1)
@@ -477,136 +477,170 @@ line level    source
  449   4                                      if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON))//闹钟开启，并且在运行
  450   4                                      {
  451   5                                              AL1_TD.Snooze_TD=ALARM_SNOOZE_ON;//开启贪睡
- 452   5                                              AL1_TD.snoozeHour=gRTC_Hour;//按下贪睡按键把当前的RTC时间赋值给贪睡计时，贪睡时间到时再响闹
- 453   5                                              AL1_TD.snoozeMinute=gRTC_Minute;
- 454   5                                              break;
- 455   5                                      }
- 456   4                                      else if(Flag_DisplayStatus==0)
- 457   4                                      {
- 458   5                                              if(gbDimmer==18)//这里形成三级调光
- 459   5                                                      gbDimmer=10;
- 460   5                                              else if(gbDimmer==10)
- 461   5                                                      gbDimmer=6;
- 462   5                                              else if(gbDimmer==6)
- 463   5                                                      gbDimmer=18;
- 464   5                                      }
- 465   4                                      break;
- 466   4                              }
- 467   3                              case KH(K_SNOOZE_DIMMER):
- 468   3                              {
- 469   4                                      
- 470   4                                      break;
- 471   4                              }
- 472   3                              case KU(K_ALARM): 
- 473   3                              {
- 474   4                                      /*年月日、RTC时间、夏令时区和贪睡时间设置*/
- 475   4                                      cntNoFlash=cDISP_DELAY_500ms;//每次进来就有1s不闪烁，为了在长按增加/减小时第一次进来是KU(),第二次才是K
+ 452   5                                              
+ 453   5                                              /*******************************************************************************
+ 454   5                                              *功能：gRTC_Minute小于50时，最大为49，如果贪睡时间为10，AL1_TD.snoozeMinute+gRTC_Minute
+ 455   5                                              *       为59，没有产生进位，
+ 456   5                                              *       
+ 457   5                                              *       如果大于等于50,根据AL1_TD.snoozeMinute的1~10分钟可能会进位
+ 458   5                                              ********************************************************************************/
+ 459   5                                              if(gRTC_Minute<50)
+ 460   5                                              {
+ 461   6                                                      AL1_TD.snoozeRTCHour=gRTC_Hour;
+ 462   6                                                      AL1_TD.snoozeRTCMinute=gRTC_Minute+AL1_TD.snoozeTime;
+ 463   6                                              }
+ 464   5                                              else if(gRTC_Minute>=50)
+ 465   5                                              {
+ 466   6                                                      /*******************************************************************************
+ 467   6                                                      *功能：如果gRTC_Minute+AL1_TD.snoozeMinute为60，说明产生了进位，贪睡时间到了的分
+ 468   6                                                      *       钟为(gRTC_Minute+AL1_TD.snoozeMinute)-60，小时在gRTC_Hour上加1，如果加了1等
+ 469   6                                                      *       于24，那就是凌晨零点，把AL1_TD.snoozeRTCHour=0
+ 470   6                                                      *
+ 471   6                                                      *
+ 472   6                                                      ********************************************************************************/
+ 473   6                                                      if((gRTC_Minute+AL1_TD.snoozeTime)>=60)
+ 474   6                                                      {
+ 475   7                                                              AL1_TD.snoozeRTCMinute=(gRTC_Minute+AL1_TD.snoozeTime)-60;
+ 476   7                                                              AL1_TD.snoozeRTCHour=gRTC_Hour+1;
+ 477   7                                                              if(AL1_TD.snoozeRTCHour>23)
+ 478   7                                                                      AL1_TD.snoozeRTCHour=0;
+ 479   7                                                      }
+ 480   6                                                      else if((gRTC_Minute+AL1_TD.snoozeTime)<60)
+ 481   6                                                      {
+ 482   7                                                              AL1_TD.snoozeRTCHour=gRTC_Hour;
+ 483   7                                                              AL1_TD.snoozeRTCMinute=gRTC_Minute+AL1_TD.snoozeTime;
+ 484   7                                                      }
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 9   
+
+ 485   6                                              }
+ 486   5                                              break;
+ 487   5                                      }
+ 488   4                                      else if(Flag_DisplayStatus==0)
+ 489   4                                      {
+ 490   5                                              if(gbDimmer==18)//这里形成三级调光
+ 491   5                                                      gbDimmer=10;
+ 492   5                                              else if(gbDimmer==10)
+ 493   5                                                      gbDimmer=6;
+ 494   5                                              else if(gbDimmer==6)
+ 495   5                                                      gbDimmer=18;
+ 496   5                                      }
+ 497   4                                      break;
+ 498   4                              }
+ 499   3                              case KH(K_SNOOZE_DIMMER):
+ 500   3                              {
+ 501   4                                      bt_cmd=BT_PLAY_PAUSE;
+ 502   4                                      break;
+ 503   4                              }
+ 504   3                              case KU(K_ALARM): 
+ 505   3                              {
+ 506   4                                      /*年月日、RTC时间、夏令时区和贪睡时间设置*/
+ 507   4                                      cntNoFlash=cDISP_DELAY_500ms;//每次进来就有1s不闪烁，为了在长按增加/减小时第一次进来是KU(),第二次才是K
              -R()
- 476   4                                      if(Flag_DisplayStatus==ADJ_YEAR)//
- 477   4                                      {
- 478   5                                              SetDisplayState2s(ADJ_MONTH);//设置月份
- 479   5                                              gRTC_Sec = 0;
- 480   5                                      }
- 481   4                                      else if(Flag_DisplayStatus==ADJ_MONTH)//
- 482   4                                      {
- 483   5                                              SetDisplayState2s(ADJ_DAY);//设置日期
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 9   
-
- 484   5                                              gRTC_Sec = 0;
- 485   5                                      }
- 486   4                                      else if(Flag_DisplayStatus==ADJ_DAY)//
- 487   4                                      {
- 488   5                                              SetDisplayState2s(ADJ_HOUR);//设置小时
- 489   5                                              gRTC_Sec = 0;
- 490   5                                      }
- 491   4                                      else if(Flag_DisplayStatus==ADJ_HOUR)//
- 492   4                                      {
- 493   5                                              SetDisplayState2s(ADJ_MINUTE);//设置分钟
- 494   5                                              gRTC_Sec = 0;
- 495   5                                      }
- 496   4                                      else if(Flag_DisplayStatus==ADJ_MINUTE)//
- 497   4                                      {
- 498   5                                              SetDisplayState2s(ADJ_DAYLIGHT_SAVING_ZONES);//设置夏令时去选择
- 499   5                                              gRTC_Sec = 0;
- 500   5                                      }
- 501   4                                      else if(Flag_DisplayStatus==ADJ_DAYLIGHT_SAVING_ZONES)//
- 502   4                                      {
- 503   5                                              SetDisplayState2s(ADJ_SNOOZE_TIME);//设置贪睡时间
- 504   5                                              gRTC_Sec = 0;
- 505   5                                      }
- 506   4                                      
- 507   4                                      /*设置闹钟*/
- 508   4                                      if(AL1_TD.OnOff_TD==ALARM_ON)
+ 508   4                                      if(Flag_DisplayStatus==ADJ_YEAR)//
  509   4                                      {
- 510   5                                              //如果闹钟在打开状态，但是还没有响闹，短按ALARM就关闭
- 511   5                                              Alarm1PowerOFF();
+ 510   5                                              SetDisplayState2s(ADJ_MONTH);//设置月份
+ 511   5                                              gRTC_Sec = 0;
  512   5                                      }
- 513   4                                      else if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON))
+ 513   4                                      else if(Flag_DisplayStatus==ADJ_MONTH)//
  514   4                                      {
- 515   5                                              //如果闹钟在运行，那短按ALARM键关闭闹钟
- 516   5                                              Alarm1PowerOFF();
+ 515   5                                              SetDisplayState2s(ADJ_DAY);//设置日期
+ 516   5                                              gRTC_Sec = 0;
  517   5                                      }
- 518   4                                      else if(Flag_DisplayStatus==0)
+ 518   4                                      else if(Flag_DisplayStatus==ADJ_DAY)//
  519   4                                      {
- 520   5                                              SetDisplayState2s(ADJ_ALARM1_HOUR);//设置闹钟小时
- 521   5                                              AL1_TD.OnOff_TD=ALARM_ON;//开闹钟
+ 520   5                                              SetDisplayState2s(ADJ_HOUR);//设置小时
+ 521   5                                              gRTC_Sec = 0;
  522   5                                      }
- 523   4                                      else if(Flag_DisplayStatus==ADJ_ALARM1_HOUR)
+ 523   4                                      else if(Flag_DisplayStatus==ADJ_HOUR)//
  524   4                                      {
- 525   5                                              SetDisplayState2s(ADJ_ALARM1_MINUTE);//设置闹钟小时
- 526   5                                      }
- 527   4                                      else if(Flag_DisplayStatus==ADJ_ALARM1_MINUTE)
- 528   4                                      {
- 529   5                                              Flag_DisplayStatus=0;//确认闹钟时间,
- 530   5                                              cntDisplayStatus=0;//不闪烁，
- 531   5                                              cntNoFlash=0;//
+ 525   5                                              SetDisplayState2s(ADJ_MINUTE);//设置分钟
+ 526   5                                              gRTC_Sec = 0;
+ 527   5                                      }
+ 528   4                                      else if(Flag_DisplayStatus==ADJ_MINUTE)//
+ 529   4                                      {
+ 530   5                                              SetDisplayState2s(ADJ_DAYLIGHT_SAVING_ZONES);//设置夏令时去选择
+ 531   5                                              gRTC_Sec = 0;
  532   5                                      }
- 533   4                                      break;
- 534   4                              }
- 535   3                              case KH(K_ALARM):
- 536   3                              {
- 537   4                                      
- 538   4                                      break;
- 539   4                              }
- 540   3                              case KR(K_AL_SN):
- 541   3                              {
- 542   4                                      if(cntKeyLong>=5)//长按1s设置RTC时间
- 543   4                                      {
- 544   5                                              SetDisplayState2s(ADJ_YEAR);
- 545   5                                              gRTC_Sec = 0;
-C51 COMPILER V9.00   KEY_MODE                                                              12/06/2018 14:18:27 PAGE 10  
+ 533   4                                      else if(Flag_DisplayStatus==ADJ_DAYLIGHT_SAVING_ZONES)//
+ 534   4                                      {
+ 535   5                                              SetDisplayState2s(ADJ_SNOOZE_TIME);//设置贪睡时间
+ 536   5                                              gRTC_Sec = 0;
+ 537   5                                      }
+ 538   4                                      
+ 539   4                                      /*设置闹钟*/
+ 540   4                                      if((AL1_TD.OnOff_TD==ALARM_ON) && (Flag_DisplayStatus==0))
+ 541   4                                      {
+ 542   5                                              //如果闹钟在打开状态，但是还没有响闹，短按ALARM就关闭
+ 543   5                                              Alarm1PowerOFF();
+ 544   5                                      }
+ 545   4                                      else if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON))
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 10  
 
- 546   5                                      }
- 547   4                                      break;
- 548   4                              }
- 549   3                              default:
- 550   3                                      break;
- 551   3                      }
- 552   2              }
- 553   1      }
- 554          
- 555          
- 556          
- 557          
- 558          
- 559          
- 560          
- 561          
- 562          
- 563          
- 564          
- 565          
- 566          
- 567          
- 568          
- 569          
- 570          
- 571          
- 572          
+ 546   4                                      {
+ 547   5                                              //如果闹钟在运行，那短按ALARM键关闭闹钟
+ 548   5                                              Alarm1PowerOFF();
+ 549   5                                      }
+ 550   4                                      else if((Flag_DisplayStatus==0) && (AL1_TD.OnOff_TD==ALARM_OFF))
+ 551   4                                      {
+ 552   5                                              SetDisplayState2s(ADJ_ALARM1_HOUR);//设置闹钟小时
+ 553   5                                              AL1_TD.OnOff_TD=ALARM_ON;//开闹钟
+ 554   5                                      }
+ 555   4                                      else if(Flag_DisplayStatus==ADJ_ALARM1_HOUR)
+ 556   4                                      {
+ 557   5                                              SetDisplayState2s(ADJ_ALARM1_MINUTE);//设置闹钟小时
+ 558   5                                      }
+ 559   4                                      else if(Flag_DisplayStatus==ADJ_ALARM1_MINUTE)
+ 560   4                                      {
+ 561   5                                              Flag_DisplayStatus=0;//确认闹钟时间,
+ 562   5                                              cntDisplayStatus=0;//不闪烁，
+ 563   5                                              cntNoFlash=0;//
+ 564   5                                      }
+ 565   4                                      break;
+ 566   4                              }
+ 567   3                              case KH(K_ALARM):
+ 568   3                              {
+ 569   4                                      
+ 570   4                                      break;
+ 571   4                              }
+ 572   3                              case KR(K_AL_SN):
+ 573   3                              {
+ 574   4                                      if(cntKeyLong>=5)//长按1s设置RTC时间
+ 575   4                                      {
+ 576   5                                              SetDisplayState2s(ADJ_YEAR);
+ 577   5                                              gRTC_Sec = 0;
+ 578   5                                      }
+ 579   4                                      break;
+ 580   4                              }
+ 581   3                              default:
+ 582   3                                      break;
+ 583   3                      }
+ 584   2              }
+ 585   1      }
+ 586          
+ 587          
+ 588          
+ 589          
+ 590          
+ 591          
+ 592          
+ 593          
+ 594          
+ 595          
+ 596          
+ 597          
+ 598          
+ 599          
+ 600          
+ 601          
+ 602          
+ 603          
+ 604          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    973    ----
+C51 COMPILER V9.00   KEY_MODE                                                              12/10/2018 10:01:34 PAGE 11  
+
+   CODE SIZE        =   1111    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

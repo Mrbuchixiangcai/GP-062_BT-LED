@@ -1,1 +1,0 @@
-"..\Hardware\SystemSleep\sys_sleep.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED;..\Hardware\SystemSleep) DEBUG OBJECTEXTEND PRINT(.\Listings\sys_sleep.lst) OBJECT(..\Object\sys_sleep.obj)

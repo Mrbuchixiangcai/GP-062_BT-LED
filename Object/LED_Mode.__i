@@ -1,1 +1,0 @@
-"..\Hardware\LED\LED_Mode.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\User;..\Hardware;..\Hardware\BT;..\Hardware\KEY;..\Hardware\LED;..\Hardware\SystemSleep) DEBUG OBJECTEXTEND PRINT(.\Listings\LED_Mode.lst) OBJECT(..\Object\LED_Mode.obj)

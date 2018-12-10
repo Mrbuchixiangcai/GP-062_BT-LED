@@ -408,18 +408,19 @@ void Display_SetRTCYear(void)
 	if((Flag_0_5s)||(NoFlash()))
 	{
 		//0.5进来一次，20和18交替显示
-		if(Flag_Year_0_5s_Disp==0)
-		{
-			//DisplayNum12(20);
-			SET_2G();//显示一个"-"
-			DisplayNum34(20);
-		}
-		else
-		{
-			SET_2G();//显示一个"-"
-			DisplayNum34(gRTC_Year);
-		}
-		
+//		if(Flag_Year_0_5s_Disp==0)
+//		{
+//			//DisplayNum12(20);
+//			SET_2G();//显示一个"-"
+//			DisplayNum34(20);
+//		}
+//		else
+//		{
+//			SET_2G();//显示一个"-"
+//			DisplayNum34(gRTC_Year);
+//		}
+		SET_2G();//显示一个"-"
+		DisplayNum34(gRTC_Year);
 	}
 }
 
@@ -731,7 +732,7 @@ void UpdateDisplay(void)
 		case ADJ_YEAR:				 //设置RTC的年
 			Display_SetRTCYear();
 			break;
-		case ADJ_MONTH:				 //设置RTC的日期
+		case ADJ_MONTH:				 //设置RTC的月期
 			Display_SetRTCMonth();
 			break;
 		case ADJ_DAY:				 //设置RTC的日期
@@ -799,24 +800,32 @@ void Display_Flag(void)
 			SET_APM();
 		}
 		
-		if(AL1_TD.OnOff_TD==ALARM_ON)
+		/*******************************************************************************
+		*功能：闹钟标志LED亮灭是在闹钟开启和设置贪睡时间时
+		*
+		********************************************************************************/
+		if((AL1_TD.OnOff_TD==ALARM_ON) || (Flag_DisplayStatus==ADJ_SNOOZE_TIME))
 		{
-			SET_ALA();//如果开蓝牙就亮闹钟标志
+			SET_ALA();//如果开闹钟就亮闹钟标志
 		}
 		else if(AL1_TD.OnOff_TD==ALARM_OFF)
 		{
 			CLR_ALA();
 		}
 		
-		if(Flag_Dot==1)
-		{
-			SET_DOT1();//在main中的INT_WT()设立标志，
-			SET_DOT2();
-		}
-		else
+		/*******************************************************************************
+		*功能：秒点亮亮灭是在Flag_Dot为0和不在设置年月日的状态时就灭
+		*
+		********************************************************************************/
+		if((Flag_Dot==0) || (Flag_DisplayStatus==ADJ_YEAR) || (Flag_DisplayStatus==ADJ_MONTH) || (Flag_DisplayStatus==ADJ_DAY))
 		{
 			CLR_DOT1();
 			CLR_DOT2();
+		}
+		else
+		{
+			SET_DOT1();//在main中的INT_WT()设立标志，
+			SET_DOT2();
 		}
 	}
 }

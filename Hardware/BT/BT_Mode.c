@@ -22,6 +22,7 @@ bit Flag_UART1_RX_Finish_B;
 bit Flag_UART_ReceiveBuffer_A_B;
 bit Flag_BT_TF_Play;//蓝牙TF卡播放模式，1正在播放，0是在暂停(停止)
 uint8_t Flag_BT_Pairing;//蓝牙一开机，但是没有连接，处在配对状态，为1为配对，为2位连接成功
+bit Flag_BT_Play_Payse;
 
 /*************************************************************/
 /*变量定义Variable Definition*********************************/
@@ -46,6 +47,7 @@ uint8_t  idata uart1_ReceiveBuffer_B[UART1_LEN_BUFFER];
 char code BT_Command_Tab[][4]=
 {
 	{0x00,0x00,0x00,0x00},
+	{0xAA,0x00,0x00,0x55},
 	{0xAA,0x00,0x05,0x55},
 	{0xAA,0x00,0x06,0x55},
 };
@@ -188,6 +190,14 @@ void BlueMode_Receive(void)
 			{
 				Flag_BT_Connect=0;//断开连接，此时蓝牙处于配对模式
 			}
+			if(BT_CMDBuffer[2]==0x04)
+			{
+				Flag_BT_Play_Payse=0;//蓝牙没有播放
+			}
+			if(BT_CMDBuffer[2]==0x05)
+			{
+				Flag_BT_Play_Payse=1;//蓝牙在播放
+			}
 		}
 		
 		for(i=0;i<UART1_LEN_BUFFER;i++)
@@ -215,13 +225,10 @@ void BlueMode_Receive(void)
 void BlueMode_Handle(void) //接收到的数据信息/状态进行处理
 {
 	BlueMode_Receive();
-	if(Flag_BT_Connect)//如果连接成功
+	if (bt_cmd)
 	{
-		if (bt_cmd)
-		{
-			BT_Send_CMD(bt_cmd);
-			bt_cmd = BT_NONE;  //清零
-		}
+		BT_Send_CMD(bt_cmd);
+		bt_cmd = BT_NONE;  //清零
 	}
 }
 

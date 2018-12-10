@@ -20,6 +20,7 @@
 enum
 {
 	BT_NONE		= 0,
+	BT_PLAY_PAUSE,//播放暂停
 	BT_VOLINC	,//音量加
 	BT_VOLDEC	,//音量减
 };
@@ -64,6 +65,7 @@ extern bit Flag_UART1_RX_Finish_B;
 extern bit Flag_UART_ReceiveBuffer_A_B;
 extern bit Flag_BT_TF_Play;//蓝牙TF卡播放模式，1正在播放，0是在暂停(停止)
 extern uint8_t Flag_BT_Pairing;//蓝牙一开机，但是没有连接，处在配对状态，为1为配对
+extern bit Flag_BT_Play_Payse;
 
 /*************************************************************/
 /*外部调用_变量定义Variable Definition*************************/

@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   APP_MAIN                                                              12/06/2018 14:29:13 PAGE 1   
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE APP_MAIN
@@ -30,339 +30,339 @@ line level    source
   19          /*************************************************************/
   20          TIME_TEMP_ST_TypeDef  Time_Temp_TD;
   21          ALRAM_ST_TypeDef  AL1_TD;//闹钟相关
-  22          
-  23          /*************************************************************/
-  24          /*标志位定义Flags Definition***********************************/
-  25          /*************************************************************/
-  26          bit    AppTick0;
-  27          bit    AppTick1;
-  28          bit    AppTick2;
-  29          bit    AppTick3;
-  30          bit    AppTick4;
-  31          bit    AppTick5;
-  32          bit    AppTick1ms;
-  33          
-  34          bit    Flag_12HourDisplay;
-  35          bit    Flag_0_5s; //0.5s
-  36          bit    Flag_LeapYear;//闰年标志，1为闰年，0为平年
-  37          BOOL   Flag_PowerOn;//开关机状态，1为开机
-  38          BOOL   gbDispleyFull;//显示满，1为满
-  39          BOOL   SleepEnable;
-  40          
-  41          /*************************************************************/
-  42          /*变量定义Variable Definition**********************************/
-  43          /*************************************************************/
-  44          uint8_t  idata cntAppTick;
-  45          
-  46          BOOL               gRTC_HalfSecond;
-  47          uint8_t  idata gRTC_Sec;//RTC数据 
-  48          uint8_t  idata gRTC_Sec_bk;
-  49          uint8_t  idata gRTC_Minute;
-  50          uint8_t  idata gRTC_Minute_bk;
-  51          uint8_t  idata gRTC_Hour;
-  52          uint8_t  idata gRTC_Hour_bk;
-  53          uint8_t  idata gRTC_Hour_bk_24;//计数24小时
-C51 COMPILER V9.00   APP_MAIN                                                              12/06/2018 14:29:13 PAGE 2   
+  22          UCT_TIME_E_TypeDef UCT_TD;//时区
+  23          
+  24          /*************************************************************/
+  25          /*标志位定义Flags Definition***********************************/
+  26          /*************************************************************/
+  27          bit    AppTick0;
+  28          bit    AppTick1;
+  29          bit    AppTick2;
+  30          bit    AppTick3;
+  31          bit    AppTick4;
+  32          bit    AppTick5;
+  33          bit    AppTick1ms;
+  34          
+  35          bit    Flag_12HourDisplay;
+  36          bit    Flag_0_5s; //0.5s
+  37          bit    Flag_LeapYear;//闰年标志，1为闰年，0为平年
+  38          BOOL   Flag_PowerOn;//开关机状态，1为开机
+  39          BOOL   gbDispleyFull;//显示满，1为满
+  40          BOOL   SleepEnable;
+  41          
+  42          uint8_t idata Flag_DayFull_Add1Month;//每个月过完就加1月值，
+  43          uint8_t idata Flag_MonthFull_Add1Year;//每年过完就加1年值，
+  44          
+  45          uint8_t idata Flag_ZoneStart;
+  46          uint8_t idata Flag_ZoneStop;
+  47          
+  48          /*************************************************************/
+  49          /*变量定义Variable Definition**********************************/
+  50          /*************************************************************/
+  51          uint8_t  idata cntAppTick;
+  52          
+  53          BOOL               gRTC_HalfSecond;
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 2   
 
-  54          uint8_t  idata gRTC_Day;
-  55          uint8_t  idata gRTC_Day_bk;
-  56          uint8_t  idata gRTC_Month;
-  57          uint8_t  idata gRTC_Month_bk;
-  58          uint8_t  idata gRTC_Year;
-  59          uint8_t  idata gRTC_Year_bk;
-  60          uint8_t  idata gRTC_Zone;
-  61          uint8_t  idata gRTC_Zone_bk;
-  62          uint8_t  idata gRTC_Week; //一周7天
-  63          uint8_t  idata cntNoFlash;
-  64          uint8_t            gbDimmer;//亮度
-  65          uint8_t  idata cnt0_5s;//计数到500ms就反转Flag_0_5s
-  66          
-  67          uint8_t  idata sys_Volume;
-  68          uint8_t  idata cntBeep;//闹钟响时并且为beep模式
-  69          uint8_t  idata cntAlarmRuningMinuteOFF;//闹钟响多少分钟关闭
-  70          
-  71          
-  72          /*************************************************************/
-  73          /*数组定义Array Definition************************************/
-  74          /*************************************************************/
-  75          
-  76          /*************************************************************/
-  77          /*函数声明Function Declaration*********************************/
-  78          /*************************************************************/
-  79          
-  80          /*************************************************************/
-  81          /*函数定义Function Definition**********************************/
-  82          /*************************************************************/
-  83          /*******************************************************************************
-  84          * 函数原型：
-  85          * 输入参数：
-  86          * 输出参数：
-  87          * 函数功能：关闭闹铃打包多条语句
-  88          * 返回值说明：
-  89          * 创建日期：
-  90          * 创建人：
-  91          * 修改日期
-  92          * 修改人：
-  93          * 第N次修改：
-  94          * 修改原因：
-  95          * 备注：
-  96          *******************************************************************************/
-  97          void Alarm1PowerOFF(void)
-  98          {
-  99   1              AL1_TD.OnOff_TD = ALARM_OFF;//闹钟开关，关
- 100   1              AL1_TD.RingRun_TD = ALARM_RING_RUN_OFF;//闹钟运行状态，关
- 101   1              AL1_TD.Snooze_TD=ALARM_SNOOZE_OFF;//闹钟贪睡模式，没有贪睡
- 102   1              BUZ_OnOff(0);
- 103   1              cntBeep=0;
- 104   1      }
- 105          
- 106          /*******************************************************************************
- 107          * 函数原型：
- 108          * 输入参数：
- 109          * 输出参数：
- 110          * 函数功能：退出显示计数
- 111          * 返回值说明：
- 112          * 创建日期：
- 113          * 创建人：
- 114          * 修改日期
- 115          * 修改人：
-C51 COMPILER V9.00   APP_MAIN                                                              12/06/2018 14:29:13 PAGE 3   
+  54          uint8_t  idata gRTC_Sec;//RTC数据 
+  55          uint8_t  idata gRTC_Sec_bk;
+  56          char     idata gRTC_Minute;
+  57          uint8_t  idata gRTC_Minute_bk;
+  58          uint8_t  idata gRTC_Hour;
+  59          uint8_t  idata gRTC_Hour_bk;
+  60          uint8_t  idata gRTC_Hour_bk_24;//计数24小时
+  61          uint8_t  idata gRTC_Day;
+  62          uint8_t  idata gRTC_Day_bk;
+  63          uint8_t  idata gRTC_Month;
+  64          uint8_t  idata gRTC_Month_bk;
+  65          uint8_t  idata gRTC_Year;
+  66          uint8_t  idata gRTC_Year_bk;
+  67          uint8_t  idata gRTC_Zone;
+  68          uint8_t  idata gRTC_Zone_bk;
+  69          uint8_t  idata gRTC_Week; //一周7天
+  70          uint8_t  idata cntNoFlash;
+  71          uint8_t            gbDimmer;//亮度
+  72          uint8_t  idata cnt0_5s;//计数到500ms就反转Flag_0_5s
+  73          
+  74          uint8_t  idata sys_Volume;
+  75          uint8_t  idata cntBeep;//闹钟响时并且为beep模式
+  76          uint8_t  idata cntAlarmRuningMinuteOFF;//闹钟响多少分钟关闭
+  77          
+  78          
+  79          /*************************************************************/
+  80          /*数组定义Array Definition************************************/
+  81          /*************************************************************/
+  82          
+  83          /*************************************************************/
+  84          /*函数声明Function Declaration*********************************/
+  85          /*************************************************************/
+  86          
+  87          /*************************************************************/
+  88          /*函数定义Function Definition**********************************/
+  89          /*************************************************************/
+  90          /*******************************************************************************
+  91          * 函数原型：
+  92          * 输入参数：
+  93          * 输出参数：
+  94          * 函数功能：关闭闹铃打包多条语句
+  95          * 返回值说明：
+  96          * 创建日期：
+  97          * 创建人：
+  98          * 修改日期
+  99          * 修改人：
+ 100          * 第N次修改：
+ 101          * 修改原因：
+ 102          * 备注：
+ 103          *******************************************************************************/
+ 104          void Alarm1PowerOFF(void)
+ 105          {
+ 106   1              AL1_TD.OnOff_TD = ALARM_OFF;//闹钟开关，关
+ 107   1              AL1_TD.RingRun_TD = ALARM_RING_RUN_OFF;//闹钟运行状态，关
+ 108   1              AL1_TD.Snooze_TD=ALARM_SNOOZE_OFF;//闹钟贪睡模式，没有贪睡
+ 109   1              _BEEP_MUTE(0);
+ 110   1              BUZ_OnOff(0);
+ 111   1              cntBeep=0;
+ 112   1      }
+ 113          
+ 114          /*******************************************************************************
+ 115          * 函数原型：
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 3   
 
- 116          * 第N次修改：
- 117          * 修改原因：
- 118          * 备注：
- 119          *******************************************************************************/
- 120          void DisplayStatusExit(void)
- 121          {
- 122   1              if (cntDisplayStatus)
- 123   1              {
- 124   2                      if (++cnt0_5s >= cDISP_DELAY_500ms)//10ms调用一次，计数到500ms就进入
- 125   2                      {
- 126   3                              cnt0_5s = 0;
- 127   3                              Flag_0_5s = ~Flag_0_5s;
- 128   3                              if(Flag_0_5s)  //每当Flag_0_5s为1，Flag_Year_0_5s_Disp就反转，这样就是1s反转一次
- 129   3                                      Flag_Year_0_5s_Disp=~Flag_Year_0_5s_Disp;
- 130   3                      }
- 131   2                      if (--cntDisplayStatus == 0)
- 132   2                      {
- 133   3                              switch (Flag_DisplayStatus)
- 134   3                              {
- 135   4                                      case DISP_CLK:
- 136   4                                              break;
- 137   4                                      default:
- 138   4                                              cntDisplayStatus = cDISP_DELAY_60ms;
- 139   4                                              Flag_DisplayStatus = DISP_CLK;
- 140   4                                              break;
- 141   4                              }
- 142   3                      }
- 143   2              }
- 144   1      }
- 145          
- 146          /*******************************************************************************
- 147          * 函数原型：
- 148          * 输入参数：
- 149          * 输出参数：
- 150          * 函数功能：时间比较，每秒钟进来一次
- 151          * 返回值说明：
- 152          * 创建日期：
- 153          * 创建人：
- 154          * 修改日期
- 155          * 修改人：
- 156          * 第N次修改：
- 157          * 修改原因：
- 158          * 备注：
- 159          *******************************************************************************/
- 160          void Compare_1MinutePorc(void)
- 161          {
- 162   1              //static uint8_t  cntSetVolume; //此变量只在上电时初始化一次，再调用此函数时不会执行此语句
- 163   1              /*******************************************************************************
- 164   1               *功能：
- 165   1               *
- 166   1               *这里是1s进来一次
- 167   1               *******************************************************************************/
- 168   1              if(gRTC_Sec!=gRTC_Sec_bk)
- 169   1              {
- 170   2                      gRTC_Sec_bk=gRTC_Sec;
- 171   2                      
- 172   2                      /*******************************************************************************
- 173   2                       *功能：
- 174   2                       *
- 175   2                       *这里是1s进来一次
- 176   2                       *******************************************************************************/
- 177   2                      if(gRTC_Minute!=gRTC_Minute_bk)//分钟
-C51 COMPILER V9.00   APP_MAIN                                                              12/06/2018 14:29:13 PAGE 4   
+ 116          * 输入参数：
+ 117          * 输出参数：
+ 118          * 函数功能：退出显示计数
+ 119          * 返回值说明：
+ 120          * 创建日期：
+ 121          * 创建人：
+ 122          * 修改日期
+ 123          * 修改人：
+ 124          * 第N次修改：
+ 125          * 修改原因：
+ 126          * 备注：
+ 127          *******************************************************************************/
+ 128          void DisplayStatusExit(void)
+ 129          {
+ 130   1              if (cntDisplayStatus)
+ 131   1              {
+ 132   2                      if (++cnt0_5s >= cDISP_DELAY_500ms)//10ms调用一次，计数到500ms就进入
+ 133   2                      {
+ 134   3                              cnt0_5s = 0;
+ 135   3                              Flag_0_5s = ~Flag_0_5s;
+ 136   3                              if(Flag_0_5s)  //每当Flag_0_5s为1，Flag_Year_0_5s_Disp就反转，这样就是1s反转一次
+ 137   3                                      Flag_Year_0_5s_Disp=~Flag_Year_0_5s_Disp;
+ 138   3                      }
+ 139   2                      if (--cntDisplayStatus == 0)
+ 140   2                      {
+ 141   3                              switch (Flag_DisplayStatus)
+ 142   3                              {
+ 143   4                                      case DISP_CLK:
+ 144   4                                              break;
+ 145   4                                      default:
+ 146   4                                              cntDisplayStatus = cDISP_DELAY_60ms;
+ 147   4                                              Flag_DisplayStatus = DISP_CLK;
+ 148   4                                              break;
+ 149   4                              }
+ 150   3                      }
+ 151   2              }
+ 152   1      }
+ 153          
+ 154          /*******************************************************************************
+ 155          * 函数原型：
+ 156          * 输入参数：
+ 157          * 输出参数：
+ 158          * 函数功能：时间比较，每秒钟进来一次
+ 159          * 返回值说明：
+ 160          * 创建日期：
+ 161          * 创建人：
+ 162          * 修改日期
+ 163          * 修改人：
+ 164          * 第N次修改：
+ 165          * 修改原因：
+ 166          * 备注：
+ 167          *******************************************************************************/
+ 168          void Compare_1MinutePorc(void)
+ 169          {
+ 170   1              //static uint8_t  cntSetVolume; //此变量只在上电时初始化一次，再调用此函数时不会执行此语句
+ 171   1              /*******************************************************************************
+ 172   1               *功能：
+ 173   1               *
+ 174   1               *这里是1s进来一次
+ 175   1               *******************************************************************************/
+ 176   1              if(gRTC_Sec!=gRTC_Sec_bk)
+ 177   1              {
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 4   
 
- 178   2                      {
- 179   3                              gRTC_Minute_bk=gRTC_Minute;
- 180   3                              
- 181   3                              /*******************************************************************************
- 182   3                               *功能：闹钟开启并且hour和minute相等，闹钟响应
- 183   3                               *      因为是24小时的实际计时，所以不用判断上午下午
- 184   3                               *******************************************************************************/
- 185   3                              if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.hour==gRTC_Hour) && (AL1_TD.minute==gRTC_Minute))
- 186   3                              {
- 187   4                                      if(AL1_TD.RingRun_TD==ALARM_RING_RUN_OFF)//
- 188   4                                      {
- 189   5                                              AL1_TD.RingRun_TD=ALARM_RING_RUN_ON;//把闹钟运行状态设为ON
- 190   5                                      }
- 191   4                              }
- 192   3                              
- 193   3                              /*******************************************************************************
- 194   3                               *功能：闹钟开启&&在运行&&贪睡时间和RTC时间相等&&贪睡模式开
- 195   3                               *
- 196   3                               *******************************************************************************/
- 197   3                              if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON) && (AL1_TD.Snooze_TD == ALARM_
+ 178   2                      gRTC_Sec_bk=gRTC_Sec;
+ 179   2                      
+ 180   2                      /*******************************************************************************
+ 181   2                       *功能：
+ 182   2                       *
+ 183   2                       *这里是1s进来一次
+ 184   2                       *******************************************************************************/
+ 185   2                      if(gRTC_Minute!=gRTC_Minute_bk)//分钟
+ 186   2                      {
+ 187   3                              gRTC_Minute_bk=gRTC_Minute;
+ 188   3                              
+ 189   3                              /*******************************************************************************
+ 190   3                               *功能：闹钟开启并且hour和minute相等，闹钟响应
+ 191   3                               *      因为是24小时的实际计时，所以不用判断上午下午
+ 192   3                               *******************************************************************************/
+ 193   3                              if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.hour==gRTC_Hour) && (AL1_TD.minute==gRTC_Minute))
+ 194   3                              {
+ 195   4                                      if(AL1_TD.RingRun_TD==ALARM_RING_RUN_OFF)//
+ 196   4                                      {
+ 197   5                                              AL1_TD.RingRun_TD=ALARM_RING_RUN_ON;//把闹钟运行状态设为ON
+ 198   5                                              if(Flag_BT_Play_Payse==1)
+ 199   5                                              {
+ 200   6                                                      bt_cmd=BT_PLAY_PAUSE;
+ 201   6                                              }
+ 202   5                                      }
+ 203   4                              }
+ 204   3                              
+ 205   3                              /*******************************************************************************
+ 206   3                               *功能：闹钟开启&&在运行&&贪睡时间和RTC时间相等&&贪睡模式开
+ 207   3                               *
+ 208   3                               *******************************************************************************/
+ 209   3                              if((AL1_TD.OnOff_TD==ALARM_ON) && (AL1_TD.RingRun_TD==ALARM_RING_RUN_ON) && (AL1_TD.Snooze_TD == ALARM_
              -SNOOZE_ON)
- 198   3                               && (AL1_TD.snoozeHour==gRTC_Hour) && (AL1_TD.snoozeMinute=gRTC_Minute))
- 199   3                              {
- 200   4                                      AL1_TD.Snooze_TD = ALARM_SNOOZE_OFF;//再次开启贪睡
- 201   4                              }
- 202   3                              
- 203   3                              /*******************************************************************************
- 204   3                               *功能：闹钟如果已经开启，并且在运行，计数30分钟关闭，无论是否是贪睡模式
- 205   3                               *
- 206   3                               *******************************************************************************/
- 207   3                              if((AL1_TD.OnOff_TD == ALARM_ON) && (AL1_TD.RingRun_TD == ALARM_RING_RUN_ON))//闹钟已经开启，并且在运行
+ 210   3                               && (AL1_TD.snoozeRTCHour==gRTC_Hour) && (AL1_TD.snoozeRTCMinute==gRTC_Minute))
+ 211   3                              {
+ 212   4                                      AL1_TD.Snooze_TD = ALARM_SNOOZE_OFF;//再次开启贪睡
+ 213   4                              }
+ 214   3                              
+ 215   3                              /*******************************************************************************
+ 216   3                               *功能：闹钟如果已经开启，并且在运行，计数30分钟关闭，无论是否是贪睡模式
+ 217   3                               *
+ 218   3                               *******************************************************************************/
+ 219   3                              if((AL1_TD.OnOff_TD == ALARM_ON) && (AL1_TD.RingRun_TD == ALARM_RING_RUN_ON))//闹钟已经开启，并且在运行
              -,
- 208   3                              {
- 209   4                                      cntAlarmRuningMinuteOFF++;
- 210   4                                      if(cntAlarmRuningMinuteOFF>=30)//30分钟到了
- 211   4                                      {
- 212   5                                              Alarm1PowerOFF();
- 213   5                                      }
- 214   4                              }
- 215   3                              
- 216   3                              /*******************************************************************************
- 217   3                               *功能：
- 218   3                               *
- 219   3                               *这里是1hour进来一次
- 220   3                               *******************************************************************************/
- 221   3                              if(gRTC_Hour!=gRTC_Hour_bk)//小时
- 222   3                              {
- 223   4                                      gRTC_Hour_bk=gRTC_Hour_bk;
- 224   4                                      gRTC_Hour_bk_24++;
- 225   4                                      if(gRTC_Hour_bk_24>=24)
- 226   4                                      {
- 227   5                                              gRTC_Hour_bk_24=0;
- 228   5                                              
- 229   5                                      }
- 230   4                              }
- 231   3                      }
- 232   2              }
- 233   1              
- 234   1              /*******************************************************************************
- 235   1              *功能：闹钟开启，并且已经响应
- 236   1              *这里是10ms进来一次
- 237   1              *******************************************************************************/
-C51 COMPILER V9.00   APP_MAIN                                                              12/06/2018 14:29:13 PAGE 5   
+ 220   3                              {
+ 221   4                                      cntAlarmRuningMinuteOFF++;
+ 222   4                                      if(cntAlarmRuningMinuteOFF>=30)//30分钟到了
+ 223   4                                      {
+ 224   5                                              Alarm1PowerOFF();
+ 225   5                                      }
+ 226   4                              }
+ 227   3                              
+ 228   3                              /*******************************************************************************
+ 229   3                               *功能：
+ 230   3                               *
+ 231   3                               *这里是1hour进来一次
+ 232   3                               *******************************************************************************/
+ 233   3                              if(gRTC_Hour!=gRTC_Hour_bk)//小时
+ 234   3                              {
+ 235   4                                      gRTC_Hour_bk=gRTC_Hour_bk;
+ 236   4                                      gRTC_Hour_bk_24++;
+ 237   4                                      if(gRTC_Hour_bk_24>=24)
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 5   
 
- 238   1              if((AL1_TD.OnOff_TD == ALARM_ON) && (AL1_TD.RingRun_TD == ALARM_RING_RUN_ON))//闹钟已经开启，并且在运行,
- 239   1              {
- 240   2                      if(AL1_TD.Snooze_TD == ALARM_SNOOZE_OFF)//闹钟如果不在贪睡模式
- 241   2                      {
- 242   3                              cntBeep++;
- 243   3                              if(cntBeep<40)
- 244   3                                      BUZ_OnOff(1);
- 245   3                              else if((cntBeep>=40) && (cntBeep<80))
- 246   3                                      BUZ_OnOff(0);
- 247   3                              else 
- 248   3                                      cntBeep=0;
- 249   3                      }
- 250   2                      else if(AL1_TD.Snooze_TD == ALARM_SNOOZE_ON)//闹钟如果在贪睡模式
- 251   2                      {
- 252   3                              cntBeep=0;
- 253   3                              BUZ_OnOff(0);
- 254   3                      }
- 255   2              }
- 256   1      }
- 257          
- 258          /*******************************************************************************
- 259          * 函数原型：
- 260          * 输入参数：
- 261          * 输出参数：
- 262          * 函数功能：滴答定时器计时函数
- 263          * 返回值说明：
- 264          * 创建日期：
- 265          * 创建人：
- 266          * 修改日期
- 267          * 修改人：
- 268          * 第N次修改：
- 269          * 修改原因：
- 270          * 备注：
- 271          *******************************************************************************/
- 272          void Sys_Tick(void)
- 273          {
- 274   1              AppTick1ms=1;
- 275   1              if(cntAppTick==0)
- 276   1                      AppTick0=1;
- 277   1              if(cntAppTick==1)
- 278   1                      AppTick1=1;
- 279   1              if(cntAppTick==2)
- 280   1                      AppTick2=1;
- 281   1              if(cntAppTick==3)
- 282   1                      AppTick3=1;
- 283   1              if(cntAppTick==4)
- 284   1                      AppTick4=1;
- 285   1              if(cntAppTick==5)
- 286   1                      AppTick5=1;
- 287   1              if(cntAppTick==6)
- 288   1              {
- 289   2                      if((--uart1_TX_Timeout)==0)//发送超时就清零发送标志位
- 290   2                              uart1_EnableSend=0;
- 291   2                      if((--uart1_RX_Timeout)==0)
- 292   2                              uart1_RX_Pointer=0;
- 293   2              }
- 294   1              if(++cntAppTick>=10)
- 295   1              {
- 296   2                      cntAppTick=0;
- 297   2              }
- 298   1      }
- 299          
-C51 COMPILER V9.00   APP_MAIN                                                              12/06/2018 14:29:13 PAGE 6   
+ 238   4                                      {
+ 239   5                                              gRTC_Hour_bk_24=0;
+ 240   5                                              
+ 241   5                                      }
+ 242   4                              }
+ 243   3                      }
+ 244   2              }
+ 245   1              
+ 246   1              if((AL1_TD.OnOff_TD == ALARM_ON) && (AL1_TD.RingRun_TD == ALARM_RING_RUN_ON))//闹钟已经开启，并且在运行,
+ 247   1              {
+ 248   2                      if(AL1_TD.Snooze_TD == ALARM_SNOOZE_OFF)//闹钟如果不在贪睡模式
+ 249   2                      {
+ 250   3                              _BEEP_MUTE(1);//解mute
+ 251   3                              P1 |= 0x40;
+ 252   3                              cntBeep++;
+ 253   3                              if(cntBeep<40)
+ 254   3                                      BUZ_OnOff(1);
+ 255   3                              else if((cntBeep>=40) && (cntBeep<80))
+ 256   3                                      BUZ_OnOff(0);
+ 257   3                              else 
+ 258   3                                      cntBeep=0;
+ 259   3                      }
+ 260   2                      else if(AL1_TD.Snooze_TD == ALARM_SNOOZE_ON)//闹钟如果在贪睡模式
+ 261   2                      {
+ 262   3                              cntBeep=0;
+ 263   3                              _BEEP_MUTE(0);//因为是闹钟开启并且在运行状态，所以不会影响其他时间的蓝牙播放
+ 264   3                              BUZ_OnOff(0);
+ 265   3                      }
+ 266   2              }
+ 267   1              
+ 268   1              /*******************************************************************************
+ 269   1              *功能：gRTC_Zone1-7,选择对应的时区
+ 270   1              *
+ 271   1              ********************************************************************************/
+ 272   1              if(gRTC_Zone==1)
+ 273   1                      UCT_TD=UTC_SUB_10;
+ 274   1              else if(gRTC_Zone==2)
+ 275   1                      UCT_TD=UTC_SUB_9;
+ 276   1              else if(gRTC_Zone==3)
+ 277   1                      UCT_TD=UTC_SUB_8;
+ 278   1              else if(gRTC_Zone==4)
+ 279   1                      UCT_TD=UTC_SUB_7;
+ 280   1              else if(gRTC_Zone==5)
+ 281   1                      UCT_TD=UTC_SUB_6;
+ 282   1              else if(gRTC_Zone==6)
+ 283   1                      UCT_TD=UTC_SUB_5;
+ 284   1              else if(gRTC_Zone==7)
+ 285   1                      UCT_TD=UTC_SUB_4;
+ 286   1      }
+ 287          /*******************************************************************************
+ 288          *功能：闹钟开启，并且已经响应
+ 289          *这里是10ms进来一次
+ 290          *******************************************************************************/
+ 291          void AlarmRunning(void)
+ 292          {
+ 293   1              
+ 294   1      }
+ 295          
+ 296          /*******************************************************************************
+ 297          * 函数原型：
+ 298          * 输入参数：
+ 299          * 输出参数：
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 6   
 
- 300          /*******************************************************************************
- 301          * 函数原型：
- 302          * 输入参数：
- 303          * 输出参数：
- 304          * 函数功能：初始化函数
- 305          * 返回值说明：
- 306          * 创建日期：
- 307          * 创建人：
- 308          * 修改日期
- 309          * 修改人：
- 310          * 第N次修改：
- 311          * 修改原因：
- 312          * 备注：
- 313          *******************************************************************************/
- 314          void PowerON_Init(void)
- 315          {
- 316   1              gRTC_Year=18;   //上电默认2018年
- 317   1              gRTC_Month=12;  //上电默认12月
- 318   1              gRTC_Day=1;             //上电默认为1号
- 319   1              gRTC_Hour=0;    //上电默认为凌晨零点零分零秒
- 320   1              gRTC_Minute=0;  //上电默认为
- 321   1              gRTC_Sec=0;             //上电默认为
- 322   1              gRTC_Hour_bk=0; //上电默认为凌晨零点零分零秒
- 323   1              gRTC_Minute_bk=0;//上电默认为
- 324   1              gRTC_Sec_bk=0;  //上电默认为
- 325   1              Flag_LeapYear=0;//2018年不是闰年
- 326   1              Flag_12HourDisplay=1;//12小时制
- 327   1              
- 328   1              cntNoFlash = 0;
- 329   1              cnt0_5s=0;
- 330   1              Flag_PowerOn = 1;
- 331   1              gbDimmer=18;
- 332   1              
- 333   1      //      AL1_TD.OnOff_TD = ALARM_ON;
- 334   1      //      AL1_TD.hour=0;
- 335   1      //      AL1_TD.minute=15;
+ 300          * 函数功能：滴答定时器计时函数
+ 301          * 返回值说明：
+ 302          * 创建日期：
+ 303          * 创建人：
+ 304          * 修改日期
+ 305          * 修改人：
+ 306          * 第N次修改：
+ 307          * 修改原因：
+ 308          * 备注：
+ 309          *******************************************************************************/
+ 310          void Sys_Tick(void)
+ 311          {
+ 312   1              AppTick1ms=1;
+ 313   1              if(cntAppTick==0)
+ 314   1                      AppTick0=1;
+ 315   1              if(cntAppTick==1)
+ 316   1                      AppTick1=1;
+ 317   1              if(cntAppTick==2)
+ 318   1                      AppTick2=1;
+ 319   1              if(cntAppTick==3)
+ 320   1                      AppTick3=1;
+ 321   1              if(cntAppTick==4)
+ 322   1                      AppTick4=1;
+ 323   1              if(cntAppTick==5)
+ 324   1                      AppTick5=1;
+ 325   1              if(cntAppTick==6)
+ 326   1              {
+ 327   2                      if((--uart1_TX_Timeout)==0)//发送超时就清零发送标志位
+ 328   2                              uart1_EnableSend=0;
+ 329   2                      if((--uart1_RX_Timeout)==0)
+ 330   2                              uart1_RX_Pointer=0;
+ 331   2              }
+ 332   1              if(++cntAppTick>=10)
+ 333   1              {
+ 334   2                      cntAppTick=0;
+ 335   2              }
  336   1      }
  337          
  338          /*******************************************************************************
  339          * 函数原型：
  340          * 输入参数：
  341          * 输出参数：
- 342          * 函数功能：app_main函数
+ 342          * 函数功能：初始化函数
  343          * 返回值说明：
  344          * 创建日期：
  345          * 创建人：
@@ -372,72 +372,120 @@ line level    source
  349          * 修改原因：
  350          * 备注：
  351          *******************************************************************************/
- 352          void app_main(void)
+ 352          void PowerON_Init(void)
  353          {
- 354   1              PowerON_Init();
- 355   1              CheckDC();
-*** WARNING C206 IN LINE 355 OF ..\HARDWARE\APP_MAIN.C: 'CheckDC': missing function-prototype
- 356   1              while(1)
- 357   1              {
- 358   2                      if(AppTick1ms)
- 359   2                      {
- 360   3                              AppTick1ms=0;
-C51 COMPILER V9.00   APP_MAIN                                                              12/06/2018 14:29:13 PAGE 7   
+ 354   1              gRTC_Year=18;     //上电默认2018年
+ 355   1              gRTC_Month=12;    //上电默认12月
+ 356   1              gRTC_Day=1;               //上电默认为1号
+ 357   1              gRTC_Week=6;      //12月号是周六
+ 358   1              gRTC_Hour=0;      //上电默认为凌晨零点零分零秒
+ 359   1              gRTC_Minute=0;    //上电默认为
+ 360   1              gRTC_Sec=0;               //上电默认为
+ 361   1              gRTC_Hour_bk=0;   //上电默认为凌晨零点零分零秒
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 7   
 
- 361   3                              CheckDC();
- 362   3                      }
- 363   2                      if(AppTick0)
- 364   2                      {
- 365   3                              AppTick0=0;
- 366   3                              KeyScan();
- 367   3                              KeyComMsg();
- 368   3                      }
- 369   2                      if((AppTick1) || (AppTick2))
- 370   2                      {
- 371   3                              AppTick1=0;
- 372   3                              AppTick2=0;
- 373   3                              BlueMode_Handle();
- 374   3                              
- 375   3                      }
- 376   2                      if(AppTick3)
- 377   2                      {
- 378   3                              AppTick3=0;
- 379   3                              Display();
- 380   3                      }
- 381   2                      if(AppTick4)
- 382   2                      {
- 383   3                              AppTick4=0;
- 384   3                              DisplayStatusExit();
- 385   3                      }
- 386   2                      if(AppTick5)
- 387   2                      {
- 388   3                              AppTick5=0;
- 389   3                              //Timing_Handle();
- 390   3                              Compare_1MinutePorc();
- 391   3                      }
- 392   2              }
- 393   1      }
- 394          
- 395          
- 396          
- 397          
- 398          
- 399          
- 400          
- 401          
- 402          
- 403          
+ 362   1              gRTC_Minute_bk=0; //上电默认为
+ 363   1              gRTC_Sec_bk=0;    //上电默认为
+ 364   1              Flag_LeapYear=0;  //2018年不是闰年
+ 365   1              Flag_12HourDisplay=1;//12小时制
+ 366   1              gRTC_Zone=6;      //所在时区，初始化为华盛顿特区时间,西五区
+ 367   1              UCT_TD=UTC_SUB_5; //所在时区，初始化为华盛顿特区时间,西五区
+ 368   1              
+ 369   1              cntNoFlash = 0;
+ 370   1              cnt0_5s=0;
+ 371   1              Flag_PowerOn = 1;
+ 372   1              gbDimmer=18;
+ 373   1              AL1_TD.snoozeTime=10;//默认为10分钟
+ 374   1      
+ 375   1              
+ 376   1      //      gRTC_Hour=23;
+ 377   1      //      gRTC_Minute=39;
+ 378   1      //      AL1_TD.OnOff_TD = ALARM_ON;
+ 379   1      //      AL1_TD.hour=0;
+ 380   1      //      AL1_TD.minute=10;
+ 381   1      }
+ 382          
+ 383          /*******************************************************************************
+ 384          * 函数原型：
+ 385          * 输入参数：
+ 386          * 输出参数：
+ 387          * 函数功能：app_main函数
+ 388          * 返回值说明：
+ 389          * 创建日期：
+ 390          * 创建人：
+ 391          * 修改日期
+ 392          * 修改人：
+ 393          * 第N次修改：
+ 394          * 修改原因：
+ 395          * 备注：
+ 396          *******************************************************************************/
+ 397          void app_main(void)
+ 398          {
+ 399   1              PowerON_Init();
+ 400   1              CheckDC();
+ 401   1              while(1)
+ 402   1              {
+ 403   2                      if(AppTick1ms)
+ 404   2                      {
+ 405   3                              AppTick1ms=0;
+ 406   3                              CheckDC();
+ 407   3                      }
+ 408   2                      if(AppTick0)
+ 409   2                      {
+ 410   3                              AppTick0=0;
+ 411   3                              KeyScan();
+ 412   3                              KeyComMsg();
+ 413   3                      }
+ 414   2                      if((AppTick1) || (AppTick2))
+ 415   2                      {
+ 416   3                              AppTick1=0;
+ 417   3                              AppTick2=0;
+ 418   3                              BlueMode_Handle();
+ 419   3                              
+ 420   3                      }
+ 421   2                      if(AppTick3)
+ 422   2                      {
+ 423   3                              AppTick3=0;
+C51 COMPILER V9.00   APP_MAIN                                                              12/10/2018 10:01:33 PAGE 8   
+
+ 424   3                              Display();
+ 425   3                              //AlarmRunning();
+ 426   3                              //P1 |= 0x40;
+ 427   3                      }
+ 428   2                      if(AppTick4)
+ 429   2                      {
+ 430   3                              AppTick4=0;
+ 431   3                              DisplayStatusExit();
+ 432   3                      }
+ 433   2                      if(AppTick5)
+ 434   2                      {
+ 435   3                              AppTick5=0;
+ 436   3                              //Timing_Handle();
+ 437   3                              Compare_1MinutePorc();
+ 438   3                      }
+ 439   2              }
+ 440   1      }
+ 441          
+ 442          
+ 443          
+ 444          
+ 445          
+ 446          
+ 447          
+ 448          
+ 449          
+ 450          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    440    ----
+   CODE SIZE        =    538    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     17    ----
-   IDATA SIZE       =     22    ----
+   DATA SIZE        =     20    ----
+   IDATA SIZE       =     26    ----
    BIT SIZE         =     14    ----
 END OF MODULE INFORMATION.
 
 
-C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

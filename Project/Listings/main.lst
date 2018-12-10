@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   MAIN                                                                  12/06/2018 14:18:26 PAGE 1   
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   51   3                              Flag_UART1_RX_Finish_A=1;
   52   3                              Flag_UART_ReceiveBuffer_A_B=~Flag_UART_ReceiveBuffer_A_B;
   53   3                      }
-C51 COMPILER V9.00   MAIN                                                                  12/06/2018 14:18:26 PAGE 2   
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 2   
 
   54   2              }
   55   1              else
@@ -104,231 +104,379 @@ line level    source
   91          {
   92   1              // Timer3 interrupt
   93   1              // TODO: add your code here
-  94   1              if(++cnt200us>=4)
+  94   1              if(Flag_PowerOn==1)
   95   1              {
-  96   2                      cnt200us=0;
-  97   2                      LEDDisplayDrive();
-  98   2              }
-  99   1      }
- 100          
- 101          void INT_WT() interrupt 20
- 102          {
- 103   1              // Watch timer interrupt
- 104   1              // TODO: add your code here
- 105   1              gRTC_HalfSecond=(!gRTC_HalfSecond);
- 106   1              if(gRTC_HalfSecond)
- 107   1              {
- 108   2                      if(++gRTC_Sec>59)
- 109   2                      {
- 110   3                              gRTC_Sec=0;
- 111   3                              if(++gRTC_Minute>59)
- 112   3                              {
- 113   4                                      gRTC_Minute=0;
- 114   4                                      if(++gRTC_Hour>23)
- 115   4                                      {
-C51 COMPILER V9.00   MAIN                                                                  12/06/2018 14:18:26 PAGE 3   
+  96   2                      if(++cnt200us>=4)
+  97   2                      {
+  98   3                              cnt200us=0;
+  99   3                              LEDDisplayDrive();
+ 100   3                      }
+ 101   2              }
+ 102   1      }
+ 103          
+ 104          void INT_WT() interrupt 20
+ 105          {
+ 106   1              // Watch timer interrupt
+ 107   1              // TODO: add your code here
+ 108   1              gRTC_HalfSecond=(!gRTC_HalfSecond);
+ 109   1              if(gRTC_HalfSecond)
+ 110   1              {
+ 111   2                      /*******************************************************************************
+ 112   2                      *功能：每60秒增加1分钟，
+ 113   2                      *
+ 114   2                      ********************************************************************************/
+ 115   2                      if(++gRTC_Sec>59)
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 3   
 
- 116   5                                              gRTC_Hour=0;
- 117   5                                              gRTC_Week<<=1;
- 118   5                                              if(gRTC_Week==0x80)//如果移位之后等于0x80，说明是第8次移位，这时候就是
- 119   5                                                      gRTC_Week=0x01;//周一，所以赋值为0x01。
- 120   5                                      }
- 121   4                              }
- 122   3                      }
- 123   2      //              if(++gRTC_Minute>59)//这里把分钟提到和秒一样的等级，是测试用，可以缩短测试时间时的时间
- 124   2      //              {
- 125   2      //                      gRTC_Minute=0;
- 126   2      //                      if(++gRTC_Hour>23)
- 127   2      //                      {
- 128   2      //                              gRTC_Hour=0;
- 129   2      //                              gRTC_Week<<=1;
- 130   2      //                              if(gRTC_Week==0x80)//如果移位之后等于0x80，说明是第8次移位，这时候就是
- 131   2      //                                      gRTC_Week=0x01;//周一，所以赋值为0x01。
- 132   2      //                      }
- 133   2      //              }
- 134   2              }
- 135   1              Flag_Dot=~Flag_Dot;
- 136   1              
- 137   1      }
- 138          
- 139          //======================================================
- 140          // peripheral setting routines
- 141          //======================================================
- 142          
- 143          unsigned char UART_read()
- 144          {
- 145   1              unsigned char dat;
- 146   1              
- 147   1              while(!(UARTST & 0x20));        // wait
- 148   1              dat = UARTDR;           // read
- 149   1              return  dat;
- 150   1      }
- 151          
- 152          void BUZ_OnOff(unsigned char On)
- 153          {
- 154   1              // Buzzer ON(On=1) / OFF(On=0)
- 155   1              BUZCR = (On)? (BUZCR | 1) : (BUZCR & (~1));     // ON / OFF
- 156   1      }
- 157          
- 158          void BUZ_init()
- 159          {
- 160   1              // initialize Buzzer
- 161   1              // Frequency (Hz) = 1000.000000
- 162   1              BUZCR = 0x00;           // clock source
- 163   1              BUZDR = 0xF9;           // count value
- 164   1      }
- 165          
- 166          void LCD_init()
- 167          {
- 168   1              // initialize LCD
- 169   1              // Frame freq. = 16.000000Hz
- 170   1              LCDCRH = 0x00;          // LCD control High
- 171   1              LCDCRL = 0x00;          // LCD control Low
- 172   1              LCDCCR = 0x00;          // LCD Contrast control
- 173   1      }
- 174          
- 175          void Timer0_init()
- 176          {
- 177   1              // initialize Timer0
-C51 COMPILER V9.00   MAIN                                                                  12/06/2018 14:18:26 PAGE 4   
+ 116   2                      {
+ 117   3                              gRTC_Sec=0;
+ 118   3                              
+ 119   3                              /*******************************************************************************
+ 120   3                              *功能：每60分钟增加一个小时
+ 121   3                              *
+ 122   3                              ********************************************************************************/
+ 123   3                              if(++gRTC_Minute>59)
+ 124   3                              {
+ 125   4                                      gRTC_Minute=0;
+ 126   4                                      
+ 127   4                                      /*******************************************************************************
+ 128   4                                      *功能：每24小时就增加一天,
+ 129   4                                      *
+ 130   4                                      ********************************************************************************/
+ 131   4                                      if(++gRTC_Hour>23)
+ 132   4                                      {
+ 133   5                                              gRTC_Hour=0;
+ 134   5                                              
+ 135   5                                              /*******************************************************************************
+ 136   5                                              *功能：7天循环
+ 137   5                                              *
+ 138   5                                              ********************************************************************************/
+ 139   5                                              if(++gRTC_Week>7)
+ 140   5                                              {
+ 141   6                                                      gRTC_Week=1;
+ 142   6                                                      
+ 143   6                                                      if(gRTC_Month==3) //3月
+ 144   6                                                      {
+ 145   7                                                              if((gRTC_Week==7) && (Flag_ZoneStart==0))//第一周的周日
+ 146   7                                                              {
+ 147   8                                                                      Flag_ZoneStart=1;
+ 148   8                                                              }
+ 149   7                                                              
+ 150   7                                                              if((gRTC_Week==1) && (Flag_ZoneStart==1))//第二周的周一
+ 151   7                                                              {
+ 152   8                                                                      Flag_ZoneStart=2;
+ 153   8                                                              }
+ 154   7                                                              
+ 155   7                                                              if((gRTC_Week==7) && (Flag_ZoneStart==2)) //第二周的周日
+ 156   7                                                              {
+ 157   8                                                                      Flag_ZoneStart=0;
+ 158   8                                                                      
+ 159   8                                                                      gRTC_Hour = gRTC_Hour+1;
+ 160   8                                                              }
+ 161   7                                                      }
+ 162   6                                                      else if(gRTC_Month==11)
+ 163   6                                                      {
+ 164   7                                                              if((gRTC_Week==7) && (Flag_ZoneStop==0))//第一周的周日
+ 165   7                                                              {
+ 166   8                                                                      Flag_ZoneStop=1;
+ 167   8                                                                      gRTC_Hour = 23;//小时向前调一个小时
+ 168   8                                                                      
+ 169   8                                                                      if(gRTC_Day>1)
+ 170   8                                                                      {
+ 171   9                                                                              gRTC_Day  = gRTC_Day-1;
+ 172   9                                                                      }
+ 173   8                                                                      else if(gRTC_Day==1)
+ 174   8                                                                      {
+ 175   9                                                                              if(gRTC_Month==2)
+ 176   9                                                                              {
+ 177  10                                                                                      if((gRTC_Year % 4) ==0)//闰年
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 4   
 
- 178   1              // 8bit timer, period = 1.000000mS
- 179   1              T0CR = 0x92;            // timer setting
- 180   1              T0DR = 0x7C;            // period count
- 181   1              IE2 |= 0x02;            // Enable Timer0 interrupt
- 182   1              T0CR |= 0x01;           // clear counter
- 183   1      }
- 184          
- 185          void Timer3_init()
- 186          {
- 187   1              // initialize Timer3
- 188   1              // 8bit timer, period = 0.050000mS
- 189   1              T3DR = 0x18;            // period count
- 190   1              T3CR = 0x8A;            // timer setting
- 191   1              IE2 |= 0x10;            // Enable Timer3 interrupt
- 192   1              T3CR |= 0x01;           // clear counter
- 193   1      }
- 194          
- 195          void UART_init()
- 196          {
- 197   1              // initialize UART interface
- 198   1              // UART : 9615bps N 8 1
- 199   1              UARTCR2 = 0x02;         // activate UART
- 200   1              UARTCR1 = 0x06;         // bit count, parity
- 201   1              UARTCR2 |= 0xEC;        // interrupt, speed
- 202   1              UARTCR3 = 0x00;         // stop bit
- 203   1              UARTBD = 0x67;          // baud rate
- 204   1              IE1 |= 0x18;            // enable UART interrupt
- 205   1      }
- 206          
- 207          void UART_write(unsigned char dat)
- 208          {
- 209   1              while(!(UARTST & 0x80));        // wait
- 210   1              UARTDR = dat;           // write
- 211   1      }
- 212          
- 213          void WT_init()
- 214          {
- 215   1              // initialize Watch timer
- 216   1              WTCR = 0x88;            // setting
- 217   1              WTDR = 0x01;            // set duty
- 218   1              WTDR = 0x80;            // clear WT
- 219   1              IE3 |= 0x04;            // Enable WT interrupt
- 220   1      }
- 221          
- 222          void clock_init()
- 223          {
- 224   1              // internal RC clock (16.000000MHz)
- 225   1              //OSCCR = 0x29;         // Set Int. OSC
- 226   1              OSCCR = (IRCS_16MHZ | IRC_EN | (1 << SCLKE));
- 227   1              SCCR  = 0x00;           // Use Int. OSC
- 228   1      //      // external clock//外部时钟源配置
- 229   1      //      OSCCR = 0x0A;           // Enable int. 1MHz and Ext. OSC
- 230   1      //      BITCR = 0x09;           // Set waiting time : 16ms@1MHz
- 231   1      //      while((BITCR & 0x80) == 0);     // Ext. OSC stabilizing time
- 232   1      //      SCCR = 0x01;            // Change to Ext. OSC
- 233   1      //      OSCCR |= 0x04;          // Disable Int. OSC
- 234   1      }
- 235          
- 236          void port_init()
- 237          {
- 238   1              // initialize ports
- 239   1              //   1 : P13      in  KEY3
-C51 COMPILER V9.00   MAIN                                                                  12/06/2018 14:18:26 PAGE 5   
+ 178  10                                                                                      {
+ 179  11                                                                                              gRTC_Day=29;
+ 180  11                                                                                      }
+ 181  10                                                                                      else//平年
+ 182  10                                                                                      {
+ 183  11                                                                                              gRTC_Day=28;
+ 184  11                                                                                      }
+ 185  10                                                                              }
+ 186   9                                                                              else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+ 187   9                                                                              {
+ 188  10                                                                                      gRTC_Day=30;
+ 189  10                                                                              }
+ 190   9                                                                              else
+ 191   9                                                                              {
+ 192  10                                                                                      gRTC_Day=31;
+ 193  10                                                                              }
+ 194   9                                                                      }
+ 195   8                                                              }
+ 196   7                                                      }
+ 197   6                                              }
+ 198   5                                              
+ 199   5                                              
+ 200   5                                              /*******************************************************************************
+ 201   5                                              *功能：天数增加，但是判断闰年，根据闰年定义天数
+ 202   5                                              *
+ 203   5                                              ********************************************************************************/
+ 204   5                                              gRTC_Day++;
+ 205   5                                              if(gRTC_Month==2)
+ 206   5                                              {
+ 207   6                                                      if((gRTC_Year % 4) ==0)//闰年
+ 208   6                                                      {
+ 209   7                                                              if(gRTC_Day>29)
+ 210   7                                                              {       
+ 211   8                                                                      gRTC_Day=1;
+ 212   8                                                                      Flag_DayFull_Add1Month=1;
+ 213   8                                                              }
+ 214   7                                                      }
+ 215   6                                                      else//平年
+ 216   6                                                      {
+ 217   7                                                              if(gRTC_Day>28)
+ 218   7                                                              {       
+ 219   8                                                                      gRTC_Day=1;
+ 220   8                                                                      Flag_DayFull_Add1Month=1;
+ 221   8                                                              }
+ 222   7                                                      }
+ 223   6                                              }
+ 224   5                                              else if((gRTC_Month==4) || (gRTC_Month==6)|| (gRTC_Month==9)|| (gRTC_Month==11))
+ 225   5                                              {
+ 226   6                                                      if(gRTC_Day>30)
+ 227   6                                                      {       
+ 228   7                                                              gRTC_Day=1;
+ 229   7                                                              Flag_DayFull_Add1Month=1;
+ 230   7                                                      }
+ 231   6                                              }
+ 232   5                                              else
+ 233   5                                              {
+ 234   6                                                      if(gRTC_Day>31)
+ 235   6                                                      {       
+ 236   7                                                              gRTC_Day=1;
+ 237   7                                                              Flag_DayFull_Add1Month=1;
+ 238   7                                                      }
+ 239   6                                              }
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 5   
 
- 240   1              //  11 : SXIN     in  32.768
- 241   1              //  12 : SXOUT    out 32.768
- 242   1              //  14 : P20      in  AC_DET
- 243   1              //  15 : P21      out COM1
- 244   1              //  16 : P22      out COM2
- 245   1              //  17 : P23      out COM3
- 246   1              //  18 : P24      out COM4
- 247   1              //  22 : P30      out SEG1
- 248   1              //  23 : P31      out SEG2
- 249   1              //  24 : P32      out SEG3
- 250   1              //  25 : P33      out SEG4
- 251   1              //  26 : P34      out SEG5
- 252   1              //  27 : P35      out SEG6
- 253   1              //  28 : P36      out SEG7
- 254   1              //  44 : TXD      out TXD
- 255   1              //  45 : RXD      in  RXD
- 256   1              //  48 : BUZo     out BUZZ
- 257   1              //  50 : P10      in  KEY0
- 258   1              //  51 : P11      in  KEY1
- 259   1              //  52 : P12      in  KEY2
- 260   1              P0IO = 0xFF;            // direction
- 261   1              P0PU = 0x00;            // pullup
- 262   1              P0OD = 0x00;            // open drain
- 263   1              P0DB = 0x00;            // bit7~6(debounce clock), bit1~0=P01~00 debounce
- 264   1              P0   = 0x00;            // port initial value
- 265   1      
- 266   1              P1IO = 0xF0;            // direction
- 267   1              P1PU = 0x0F;            // pullup
- 268   1              P1OD = 0x00;            // open drain
- 269   1              P1DB = 0x00;            // P17~10 debounce
- 270   1              P1   = 0x00;            // port initial value
- 271   1      
- 272   1              P2IO = 0xFE;            // direction
- 273   1              P2PU = 0x00;            // pullup
- 274   1              P2OD = 0x00;            // open drain
- 275   1              P2   = 0x00;            // port initial value
- 276   1      
- 277   1              P3IO = 0xFF;            // direction
- 278   1              P3PU = 0x00;            // pullup
- 279   1              P3OD = 0x00;            // open drain
- 280   1              P3   = 0x00;            // port initial value
- 281   1      
- 282   1              P4IO = 0xFF;            // direction
- 283   1              P4PU = 0x00;            // pullup
- 284   1              P4OD = 0x00;            // open drain
- 285   1              P4   = 0x00;            // port initial value
- 286   1      
- 287   1              P5IO = 0x7F;            // direction
- 288   1              P5PU = 0x00;            // pullup
- 289   1              P5OD = 0x00;            // open drain
- 290   1              P5   = 0x00;            // port initial value
- 291   1      
- 292   1              P6IO = 0xF7;            // direction
- 293   1              P6PU = 0x00;            // pullup
- 294   1              P6OD = 0x00;            // open drain
- 295   1              P6   = 0x00;            // port initial value
- 296   1      
- 297   1              // Set port functions
- 298   1              P0FSR = 0x02;           // P0 selection//开启BUZE
- 299   1              P2FSR = 0x00;           // P2 selection
- 300   1              P3FSR = 0x00;           // P3 selection
- 301   1              P4FSR = 0x00;           // P4 selection
-C51 COMPILER V9.00   MAIN                                                                  12/06/2018 14:18:26 PAGE 6   
+ 240   5                                              
+ 241   5                                              /*******************************************************************************
+ 242   5                                              *功能：每个月的N天过完就增加一个月
+ 243   5                                              *
+ 244   5                                              ********************************************************************************/
+ 245   5                                              if(Flag_DayFull_Add1Month==1)
+ 246   5                                              {
+ 247   6                                                      Flag_DayFull_Add1Month=0;
+ 248   6                                                      
+ 249   6                                                      if(++gRTC_Month>12)
+ 250   6                                                      {
+ 251   7                                                              gRTC_Month=1;
+ 252   7                                                              
+ 253   7                                                              /*******************************************************************************
+ 254   7                                                              *功能：每年的12月过完就增加一年
+ 255   7                                                              *
+ 256   7                                                              ********************************************************************************/
+ 257   7                                                              gRTC_Year++;//可以不再判断年的最大值，因为用户没法加快时间，这个最大可以2099年
+ 258   7                                                      }
+ 259   6                                              }
+ 260   5                                              
+ 261   5                                      }
+ 262   4      //                              if(gRTC_Month==
+ 263   4                              }
+ 264   3                      }
+ 265   2      //              if(++gRTC_Minute>59)//这里把分钟提到和秒一样的等级，是测试用，可以缩短测试时间时的时间
+ 266   2      //              {
+ 267   2      //                      gRTC_Minute=0;
+ 268   2      //                      if(++gRTC_Hour>23)
+ 269   2      //                      {
+ 270   2      //                              gRTC_Hour=0;
+ 271   2      //                              gRTC_Week<<=1;
+ 272   2      //                              if(gRTC_Week==0x80)//如果移位之后等于0x80，说明是第8次移位，这时候就是
+ 273   2      //                                      gRTC_Week=0x01;//周一，所以赋值为0x01。
+ 274   2      //                      }
+ 275   2      //              }
+ 276   2              }
+ 277   1              Flag_Dot=~Flag_Dot;
+ 278   1              
+ 279   1      }
+ 280          
+ 281          //======================================================
+ 282          // peripheral setting routines
+ 283          //======================================================
+ 284          
+ 285          unsigned char UART_read()
+ 286          {
+ 287   1              unsigned char dat;
+ 288   1              
+ 289   1              while(!(UARTST & 0x20));        // wait
+ 290   1              dat = UARTDR;           // read
+ 291   1              return  dat;
+ 292   1      }
+ 293          
+ 294          void BUZ_OnOff(unsigned char On)
+ 295          {
+ 296   1              // Buzzer ON(On=1) / OFF(On=0)
+ 297   1              BUZCR = (On)? (BUZCR | 1) : (BUZCR & (~1));     // ON / OFF
+ 298   1      }
+ 299          
+ 300          void BUZ_init()
+ 301          {
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 6   
 
- 302   1              P5FSRH = 0x18;          // P5 selection High
- 303   1              P5FSRL = 0x00;          // P5 selection Low
- 304   1              P6FSR = 0x0C;           // P6 selection
- 305   1      }
- 306          
+ 302   1              // initialize Buzzer
+ 303   1              // Frequency (Hz) = 1000.000000
+ 304   1              BUZCR = 0x00;           // clock source
+ 305   1              BUZDR = 0xF9;           // count value
+ 306   1      }
+ 307          
+ 308          void LCD_init()
+ 309          {
+ 310   1              // initialize LCD
+ 311   1              // Frame freq. = 16.000000Hz
+ 312   1              LCDCRH = 0x00;          // LCD control High
+ 313   1              LCDCRL = 0x00;          // LCD control Low
+ 314   1              LCDCCR = 0x00;          // LCD Contrast control
+ 315   1      }
+ 316          
+ 317          void Timer0_init()
+ 318          {
+ 319   1              // initialize Timer0
+ 320   1              // 8bit timer, period = 1.000000mS
+ 321   1              T0CR = 0x92;            // timer setting
+ 322   1              T0DR = 0x7C;            // period count
+ 323   1              IE2 |= 0x02;            // Enable Timer0 interrupt
+ 324   1              T0CR |= 0x01;           // clear counter
+ 325   1      }
+ 326          
+ 327          void Timer3_init()
+ 328          {
+ 329   1              // initialize Timer3
+ 330   1              // 8bit timer, period = 0.050000mS
+ 331   1              T3DR = 0x18;            // period count
+ 332   1              T3CR = 0x8A;            // timer setting
+ 333   1              IE2 |= 0x10;            // Enable Timer3 interrupt
+ 334   1              T3CR |= 0x01;           // clear counter
+ 335   1      }
+ 336          
+ 337          void UART_init()
+ 338          {
+ 339   1              // initialize UART interface
+ 340   1              // UART : 9615bps N 8 1
+ 341   1              UARTCR2 = 0x02;         // activate UART
+ 342   1              UARTCR1 = 0x06;         // bit count, parity
+ 343   1              UARTCR2 |= 0xEC;        // interrupt, speed
+ 344   1              UARTCR3 = 0x00;         // stop bit
+ 345   1              UARTBD = 0x67;          // baud rate
+ 346   1              IE1 |= 0x18;            // enable UART interrupt
+ 347   1      }
+ 348          
+ 349          void UART_write(unsigned char dat)
+ 350          {
+ 351   1              while(!(UARTST & 0x80));        // wait
+ 352   1              UARTDR = dat;           // write
+ 353   1      }
+ 354          
+ 355          void WT_init()
+ 356          {
+ 357   1              // initialize Watch timer
+ 358   1              WTCR = 0x88;            // setting
+ 359   1              WTDR = 0x01;            // set duty
+ 360   1              WTDR = 0x80;            // clear WT
+ 361   1              IE3 |= 0x04;            // Enable WT interrupt
+ 362   1      }
+ 363          
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 7   
+
+ 364          void clock_init()
+ 365          {
+ 366   1              // internal RC clock (16.000000MHz)
+ 367   1              //OSCCR = 0x29;         // Set Int. OSC
+ 368   1              OSCCR = (IRCS_16MHZ | IRC_EN | (1 << SCLKE));
+ 369   1              SCCR  = 0x00;           // Use Int. OSC
+ 370   1      //      // external clock//外部时钟源配置
+ 371   1      //      OSCCR = 0x0A;           // Enable int. 1MHz and Ext. OSC
+ 372   1      //      BITCR = 0x09;           // Set waiting time : 16ms@1MHz
+ 373   1      //      while((BITCR & 0x80) == 0);     // Ext. OSC stabilizing time
+ 374   1      //      SCCR = 0x01;            // Change to Ext. OSC
+ 375   1      //      OSCCR |= 0x04;          // Disable Int. OSC
+ 376   1      }
+ 377          
+ 378          void port_init()
+ 379          {
+ 380   1              // initialize ports
+ 381   1              //   1 : P13      in  KEY3
+ 382   1              //  11 : SXIN     in  32.768
+ 383   1              //  12 : SXOUT    out 32.768
+ 384   1              //  14 : P20      in  AC_DET
+ 385   1              //  15 : P21      out COM1
+ 386   1              //  16 : P22      out COM2
+ 387   1              //  17 : P23      out COM3
+ 388   1              //  18 : P24      out COM4
+ 389   1              //  22 : P30      out SEG1
+ 390   1              //  23 : P31      out SEG2
+ 391   1              //  24 : P32      out SEG3
+ 392   1              //  25 : P33      out SEG4
+ 393   1              //  26 : P34      out SEG5
+ 394   1              //  27 : P35      out SEG6
+ 395   1              //  28 : P36      out SEG7
+ 396   1              //  44 : TXD      out TXD
+ 397   1              //  45 : RXD      in  RXD
+ 398   1              //  48 : BUZo     out BUZZ
+ 399   1              //  50 : P10      in  KEY0
+ 400   1              //  51 : P11      in  KEY1
+ 401   1              //  52 : P12      in  KEY2
+ 402   1              P0IO = 0xFF;            // direction
+ 403   1              P0PU = 0x00;            // pullup
+ 404   1              P0OD = 0x00;            // open drain
+ 405   1              P0DB = 0x00;            // bit7~6(debounce clock), bit1~0=P01~00 debounce
+ 406   1              P0   = 0x00;            // port initial value
+ 407   1      
+ 408   1              P1IO = 0xF0;            // direction
+ 409   1              P1PU = 0x4F;            // pullup
+ 410   1      //      P1IO = 0xF0;            // direction
+ 411   1      //      P1PU = 0x0F;            // pullup
+ 412   1              P1OD = 0x00;            // open drain
+ 413   1              P1DB = 0x00;            // P17~10 debounce
+ 414   1              P1   = 0x00;            // port initial value
+ 415   1      
+ 416   1              P2IO = 0xFE;            // direction
+ 417   1              P2PU = 0x00;            // pullup
+ 418   1              P2OD = 0x01;            // open drain,P20输入开喽
+ 419   1              P2   = 0x00;            // port initial value
+ 420   1      
+ 421   1              P3IO = 0xFF;            // direction
+ 422   1              P3PU = 0x00;            // pullup
+ 423   1              P3OD = 0x00;            // open drain
+ 424   1              P3   = 0x00;            // port initial value
+ 425   1      
+C51 COMPILER V9.00   MAIN                                                                  12/10/2018 10:01:33 PAGE 8   
+
+ 426   1              P4IO = 0xFF;            // direction
+ 427   1              P4PU = 0x00;            // pullup
+ 428   1              P4OD = 0x00;            // open drain
+ 429   1              P4   = 0x00;            // port initial value
+ 430   1      
+ 431   1              P5IO = 0x7F;            // direction
+ 432   1              P5PU = 0x00;            // pullup
+ 433   1              P5OD = 0x00;            // open drain
+ 434   1              P5   = 0x00;            // port initial value
+ 435   1      
+ 436   1              P6IO = 0xF7;            // direction
+ 437   1              P6PU = 0x00;            // pullup
+ 438   1              P6OD = 0x00;            // open drain
+ 439   1              P6   = 0x00;            // port initial value
+ 440   1      
+ 441   1              // Set port functions
+ 442   1              P0FSR = 0x02;           // P0 selection//开启BUZE
+ 443   1              P2FSR = 0x00;           // P2 selection
+ 444   1              P3FSR = 0x00;           // P3 selection
+ 445   1              P4FSR = 0x00;           // P4 selection
+ 446   1              P5FSRH = 0x18;          // P5 selection High
+ 447   1              P5FSRL = 0x00;          // P5 selection Low
+ 448   1              P6FSR = 0x0C;           // P6 selection
+ 449   1      }
+ 450          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    576    ----
+   CODE SIZE        =    856    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
